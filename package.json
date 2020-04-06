@@ -1,0 +1,11 @@
+{
+  "name": "polepath",
+  "version": "1.0.0",
+  "description": "The most amazing app for aerial nerds",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Gabriella Meggyes",
+  "license": "ISC"
+}
