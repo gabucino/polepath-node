@@ -43,13 +43,14 @@ exports.create = async (req, res, next) => {
 exports.login = (req, res) => {
   console.log(console.log('Current user is:' + req.user))
   const token = signToken(req.user)
-  res.status(200).json({ token: token, message: 'Login Successful' })
-}
-
-exports.googleLogin = (req, res) => {
-  console.log(console.log('Current user is:' + req.user))
-  const token = signToken(req.user)
-  res.status(200).json({ token: token, message: 'Login Successful' })
+  res.status(200).json({
+    token: token,
+    message: 'Login Successful',
+    userData: {
+      username: req.user.username,
+      email: req.user.email,
+    },
+  })
 }
 
 exports.logout = (req, res) => {
@@ -65,11 +66,11 @@ exports.secret = (req, res) => {
 
 //Oauth controllers
 
-exports.loginWithGoogle = (req, res, next) => {
-  passport.authenticate('google', {
-    scope: ['profile'],
-  })
-  //   res.status(201).json({
-  //     message: 'Logging in with google',
-  //   })
-}
+// exports.loginWithGoogle = (req, res, next) => {
+//   passport.authenticate('google', {
+//     scope: ['profile'],
+//   })
+//   //   res.status(201).json({
+//   //     message: 'Logging in with google',
+//   //   })
+// }
