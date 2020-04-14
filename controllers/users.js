@@ -1,8 +1,8 @@
 const User = require('../models/user')
-const passport = require('passport')
 const jwt = require('jsonwebtoken')
 const { jsonSecret } = require('../config/keys')
 const bcrypt = require('bcrypt')
+const { validationResult } = require('express-validator')
 
 signToken = (user) => {
   return jwt.sign(
@@ -16,28 +16,40 @@ signToken = (user) => {
   )
 }
 
-exports.create = async (req, res, next) => {
+exports.create = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation failed.');
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
+  }
+
   const username = req.body.username
   const email = req.body.email
   const password = req.body.password
 
-  const hashedPw = await bcrypt.hash(password, 12)
-
-  const user = new User({
-    username: username,
-    email: email,
-    password: hashedPw,
-  })
-  const createdUser = await user.save()
-  console.log(createdUser)
-
-  const token = signToken(createdUser)
-
-  res.status(201).json({
-    token: token,
-    message: 'User created',
-    userId: createdUser._id,
-  })
+  bcrypt
+    .hash(password, 12)
+    .then((hashedPw) => {
+      const user = new User({
+        email: email,
+        username: username,
+        password: hashedPw,
+      })
+      return user.save().then((createdUser) => {
+        const token = signToken(createdUser)
+        res
+          .status(201)
+          .json({ message: 'User created', token: token, user: createdUser })
+      })
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500
+      }
+      next(err)
+    })
 }
 
 exports.login = (req, res) => {
@@ -45,10 +57,12 @@ exports.login = (req, res) => {
   const token = signToken(req.user)
   res.status(200).json({
     token: token,
+    role: req.user.role,
     message: 'Login Successful',
     userData: {
       username: req.user.username,
       email: req.user.email,
+      photoURL: req.user.photoURL,
     },
   })
 }
@@ -63,14 +77,3 @@ exports.logout = (req, res) => {
 exports.secret = (req, res) => {
   res.json({ secret: 'resource' })
 }
-
-//Oauth controllers
-
-// exports.loginWithGoogle = (req, res, next) => {
-//   passport.authenticate('google', {
-//     scope: ['profile'],
-//   })
-//   //   res.status(201).json({
-//   //     message: 'Logging in with google',
-//   //   })
-// }

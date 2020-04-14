@@ -17,8 +17,11 @@ const userSchema = new Schema(
     },
     role: {
       type: String,
-      default: 'dancer',
+      default: 'user',
     },
+    photoURL: {
+      type: String,
+    }
   },
   { timestamps: true }
 )

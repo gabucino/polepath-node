@@ -39,6 +39,7 @@ passport.use(
       try {
         const user = await User.findOne({ email })
         if (!user) {
+           
           return done(null, false)
         }
         const isPwMatch = await bcrypt.compare(password, user.password)
@@ -65,8 +66,8 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        console.log('AccessToken', accessToken)
-        console.log('profile', profile)
+        // console.log('AccessToken', accessToken)
+        // console.log('profile', profile)
 
         const existingUser = await User.findOne({ googleId: profile.id })
         if (existingUser) {
@@ -76,7 +77,8 @@ passport.use(
           const user = await new User({
             username: profile.displayName,
             googleId: profile.id,
-            email: profile._json.email
+            email: profile._json.email,
+            photoURL: profile._json.picture
           }).save()
           console.log('new user created' + user)
           done(null, user)

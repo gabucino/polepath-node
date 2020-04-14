@@ -2,17 +2,22 @@ const express = require('express')
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const dotenv = require('dotenv')
-const passport = require('passport')
+const morgan = require('morgan')
+const cors = require('cors')
+
 const passportSetup = require('./config/passport-setup')
 
 //Routes
 const usersRoutes = require('./routes/users')
+const polemovesRoutes = require('./routes/polemoves')
 
 const app = express()
 
 dotenv.config()
+app.use(cors())
 
 app.use(bodyParser.json())
+app.use(morgan('dev'))
 
 
 app.use((req, res, next) => {
@@ -25,12 +30,11 @@ app.use((req, res, next) => {
   next()
 })
 
-// app.use(passport.initialize())
-
-
 //Register routes
 app.use('/users', usersRoutes)
+app.use('/moves', polemovesRoutes)
 
+//error handling middleaware
 app.use((error, req, res, next) => {
   console.log(error)
   const status = error.statusCode || 500
