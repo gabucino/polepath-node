@@ -49,6 +49,6 @@ mongoose
     useUnifiedTopology: true,
   })
   .then((result) => {
-    const server = app.listen(8080)
+    const server = app.listen(process.env.PORT || 8080)
   })
   .catch((err) => console.log(err))

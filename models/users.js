@@ -9,6 +9,7 @@ const userSchema = new Schema(
       required: true,
     },
     googleId: String,
+    facebookId: String,
     email: {
       type: String,
     },
@@ -21,7 +22,19 @@ const userSchema = new Schema(
     },
     photoURL: {
       type: String,
-    }
+    },
+    polemoves: [
+      {
+        move: {
+          type: Schema.Types.ObjectId,
+          ref: 'Polemove',
+        },
+        mastered: {
+          type: Boolean,
+          default: false
+        },
+      },
+    ],
   },
   { timestamps: true }
 )

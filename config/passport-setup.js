@@ -1,10 +1,13 @@
 const passport = require('passport')
+
 const GoogleTokenStrategy = require('passport-google-token').Strategy
 const jwtStrategy = require('passport-jwt').Strategy
-const { ExtractJwt } = require('passport-jwt')
 const LocalStrategy = require('passport-local').Strategy
+const FacebookTokenStrategy = require('passport-facebook-token')
+
+const { ExtractJwt } = require('passport-jwt')
 const keys = require('./keys')
-const User = require('../models/user')
+const User = require('../models/users')
 const bcrypt = require('bcrypt')
 
 //JWT Strategy
@@ -39,7 +42,6 @@ passport.use(
       try {
         const user = await User.findOne({ email })
         if (!user) {
-           
           return done(null, false)
         }
         const isPwMatch = await bcrypt.compare(password, user.password)
@@ -78,13 +80,45 @@ passport.use(
             username: profile.displayName,
             googleId: profile.id,
             email: profile._json.email,
-            photoURL: profile._json.picture
+            photoURL: profile._json.picture,
           }).save()
           console.log('new user created' + user)
           done(null, user)
         }
       } catch (err) {
         done(err, false)
+      }
+    }
+  )
+)
+
+passport.use(
+  'facebookToken',
+  new FacebookTokenStrategy(
+    {
+      clientID: keys.facebook.clientID,
+      clientSecret: keys.facebook.clientSecret,
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      console.log('AccessToken', accessToken)
+      console.log('profile', profile)
+      try {
+        const existingUser = await User.findOne({ facebookId: profile.id })
+
+        if (existingUser) {
+          return done(null, existingUser)
+        }
+        const newUser = new User({
+          facebookId: profile.id,
+          email: profile.emails[0].value,
+          username: profile.name.givenName,
+          photoURL: profile.photos[0].value,
+        })
+
+        await newUser.save()
+        done(null, newUser)
+      } catch (error) {
+        done(error, false, error.message)
       }
     }
   )

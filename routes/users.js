@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const { body } = require('express-validator')
 
-const User = require('../models/user')
+const User = require('../models/users')
 const usersController = require('../controllers/users')
 
 const passport = require('passport')
@@ -12,7 +12,7 @@ router.put(
   '/create',
   [
     body('email')
-      .normalizeEmail()
+      .normalizeEmail({ gmail_remove_dots: false })
       .isEmail()
       .withMessage('Please enter a valid email')
       .custom((value, { req }) => {
@@ -50,7 +50,18 @@ router.post(
   usersController.login
 )
 
+router.post(
+  '/facebook',
+  passport.authenticate('facebookToken', { session: false }),
+  usersController.login
+)
+
 //Any protected page example
+
+router.post('/polemoves/addmovetouser', usersController.addMoveToUser)
+
+
+
 
 router.get(
   '/secret',

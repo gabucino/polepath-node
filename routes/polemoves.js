@@ -1,11 +1,13 @@
 const router = require('express').Router()
 
-const Polemove = require('../models/polemoves')
 const polemovesController = require('../controllers/polemoves')
 
 
 router.put('/create', polemovesController.create)
 
-router.get('/polemoves', polemovesController.view)
+router.get('/polemoves', polemovesController.viewAll)
+
+
+router.get('/polemoves/:polemoveId', polemovesController.view)
 
 module.exports = router
