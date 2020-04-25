@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const dotenv = require('dotenv')
 const morgan = require('morgan')
-const cors = require('cors')
+// const cors = require('cors')
 
 const passportSetup = require('./config/passport-setup')
 
@@ -14,7 +14,7 @@ const polemovesRoutes = require('./routes/polemoves')
 const app = express()
 
 dotenv.config()
-app.use(cors())
+// app.use(cors())
 
 app.use(bodyParser.json())
 app.use(morgan('dev'))
@@ -45,6 +45,7 @@ app.use((error, req, res, next) => {
 
 mongoose
   .connect(process.env.MONGODB_URI, {
+    useFindAndModify: false,
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })

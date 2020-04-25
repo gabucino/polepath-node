@@ -29,9 +29,11 @@ const userSchema = new Schema(
           type: Schema.Types.ObjectId,
           ref: 'Polemove',
         },
-        mastered: {
-          type: Boolean,
-          default: false
+        userMoveData: {
+          mastered: {
+            type: Boolean,
+            default: false,
+          },
         },
       },
     ],

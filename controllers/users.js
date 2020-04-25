@@ -1,11 +1,11 @@
 const User = require('../models/users')
 const Polemove = require('../models/polemoves')
+const ObjectId = require('mongodb').ObjectID
 
 const jwt = require('jsonwebtoken')
 const { jsonSecret } = require('../config/keys')
 const bcrypt = require('bcrypt')
 const { validationResult } = require('express-validator')
-
 
 // Auth
 signToken = (user) => {
@@ -57,9 +57,10 @@ exports.create = async (req, res, next) => {
 exports.login = async (req, res) => {
   console.log(console.log('Current user is:' + req.user))
   const token = signToken(req.user)
-  console.log('REQ USER:', req.user)
 
-  const userWithPolemoveData = await User.findById(req.user._id).populate({path: 'polemoves.move'})
+  const userWithPolemoveData = await User.findById(req.user._id).populate({
+    path: 'polemoves.move',
+  })
 
   res.status(200).json({
     token: token,
@@ -70,7 +71,7 @@ exports.login = async (req, res) => {
       username: req.user.username,
       email: req.user.email,
       photoURL: req.user.photoURL,
-      polemoves: userWithPolemoveData.polemoves
+      polemoves: userWithPolemoveData.polemoves,
     },
   })
 }
@@ -91,31 +92,92 @@ exports.secret = (req, res) => {
 exports.addMoveToUser = async (req, res, next) => {
   try {
     const userId = req.body.userId
-    const polemoveId = req.body.polemoveId
-
+    const polemoveId = ObjectId(req.body.polemoveId)
     const mastered = req.body.mastered
 
-    const polemove = await Polemove.find({_id: polemoveId})
-    console.log('POLEMOVE:', polemove)
+    const polemove = await Polemove.find({ _id: polemoveId })
 
-    console.log(('USERID:', userId))
-
-    const addedMove = {
-      move: polemoveId,
-      mastered: mastered
-    }
     const user = await User.findById(userId)
+    const userCurrentMoves = user.polemoves
 
-    console.log('USER FOUND', user)
-    user.polemoves.push(addedMove)
+    let isMasteredAlready
+    for (let i = 0; i < userCurrentMoves.length; i++) {
+      if (userCurrentMoves[i].move.toString() === polemoveId.toString()) {
+        console.log('I found a match')
+        isMasteredAlready = userCurrentMoves[i].userMoveData.mastered
+      }
+    }
 
-    await user.save()
-    const userWithPolemoveData = await User.findById(userId).populate({path: 'polemoves.move'})
-    console.log(userWithPolemoveData.polemoves)
+    console.log('MASTERED:', mastered, 'isMASTEREDALREADY:', isMasteredAlready)
+
+    if (
+      (mastered === null && isMasteredAlready === undefined) ||
+      mastered === isMasteredAlready
+    ) {
+      console.log('Nothing to do here')
+      return res.status(200).json({
+        message: 'No changes added',
+        user: user,
+      })
+    }
+
+    if (mastered === null) {
+      const updatedUser = await User.updateOne(
+        { _id: userId },
+        {
+          $pull: {
+            polemoves: {
+              move: polemoveId,
+            },
+          },
+        }
+      )
+      console.log('Move succesfully removed from user')
+      return res.status(200).json({
+        message: 'Move removed from user',
+        user: updatedUser,
+      })
+    }
+
+    if (isMasteredAlready === undefined) {
+      const addedMove = {
+        move: polemoveId,
+        userMoveData: {
+          mastered: mastered,
+        },
+      }
+
+      user.polemoves.push(addedMove)
+      await user.save()
+
+      const userWithPolemoveData = await User.findById(userId).populate({
+        path: 'polemoves.move',
+      })
+
+      return res.status(200).json({
+        message: 'Move added succesfully',
+        user: userWithPolemoveData,
+      })
+    }
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: userId, 'polemoves.move': polemoveId },
+      {
+        $set: {
+          polemoves: {
+            move: polemoveId,
+            userMoveData: {
+              mastered: mastered,
+            },
+          },
+        },
+      }
+    )
+    console.log('and this ran')
 
     res.status(200).json({
-      message: 'Move added succesfully',
-      user: userWithPolemoveData,
+      message: 'Move status changed',
+      user: updatedUser,
     })
   } catch (err) {
     if (!err.statusCode) {
