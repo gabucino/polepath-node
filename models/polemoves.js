@@ -19,6 +19,7 @@ const poleMovesSchema = new Schema(
     description: {
       type: String,
     },
+    //users public photos and notes
     usersPhotos: [{ type: String }],
     usersNotes: [{ type: String }],
   },

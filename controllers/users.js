@@ -108,13 +108,10 @@ exports.addMoveToUser = async (req, res, next) => {
       }
     }
 
-    console.log('MASTERED:', mastered, 'isMASTEREDALREADY:', isMasteredAlready)
-
     if (
       (mastered === null && isMasteredAlready === undefined) ||
       mastered === isMasteredAlready
     ) {
-      console.log('Nothing to do here')
       return res.status(200).json({
         message: 'No changes added',
         user: user,
@@ -145,6 +142,7 @@ exports.addMoveToUser = async (req, res, next) => {
         userMoveData: {
           mastered: mastered,
         },
+        userNotes: [],
       }
 
       user.polemoves.push(addedMove)
@@ -173,11 +171,42 @@ exports.addMoveToUser = async (req, res, next) => {
         },
       }
     )
-    console.log('and this ran')
 
     res.status(200).json({
       message: 'Move status changed',
       user: updatedUser,
+    })
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+    next(err)
+  }
+}
+
+exports.addNote = async (req, res, next) => {
+  try {
+    const userId = req.body.userId
+    const polemoveId = req.body.polemoveId
+    const note = req.body.note
+
+    const user = await User.findById(userId)
+
+    for (let polemove of user.polemoves) {
+      const polemoveIdString = polemove.move.toString()
+
+      if (polemoveIdString === polemoveId) {
+        const userMoveData = polemove.userMoveData
+        userMoveData.userNotes.push({ text: note })
+        const updatedUser = await user.save()
+        return res.status(200).json({
+          message: 'Note added',
+          polemove: userMoveData
+        })
+      }
+    }
+    return res.status(404).json({
+      message: 'Sorry, move not found with this user',
     })
   } catch (err) {
     if (!err.statusCode) {

@@ -60,6 +60,7 @@ router.post(
 
 router.post('/polemoves/addmovetouser', usersController.addMoveToUser)
 
+router.post('/polemoves/addnotes', usersController.addNote)
 
 
 

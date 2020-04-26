@@ -34,6 +34,7 @@ const userSchema = new Schema(
             type: Boolean,
             default: false,
           },
+          userNotes: [{ text: String }],
         },
       },
     ],
