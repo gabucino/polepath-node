@@ -2,8 +2,6 @@ const Polemove = require('../models/polemoves')
 const ObjectId = require('mongoose').Types.ObjectId
 const User = require('../models/users')
 
-
-
 exports.create = async (req, res, next) => {
   try {
     const name = req.body.name
@@ -51,31 +49,45 @@ exports.viewAll = async (req, res, next) => {
   }
 }
 
-exports.view = (req, res, next) => {
-  const moveId = req.params.polemoveId
-  const isValid = ObjectId.isValid(moveId)
-  if (!isValid) {
-    const error = new Error('Move id invalid')
-    error.statusCode = 404
-    throw error
+exports.view = async (req, res, next) => {
+  try {
+    //TODO: make sure to get user id too
+    const moveId = req.params.polemoveId
+    const isValid = ObjectId.isValid(moveId)
+    if (!isValid) {
+      const error = new Error('Move id invalid')
+      error.statusCode = 404
+      throw error
+    }
+
+    //I need to return two things: user related data, and general polemovedata
+    const userMoves = req.user.polemoves
+    let moveUserData
+
+    for (let polemove of userMoves) {
+      console.log('Looping')
+      if (polemove.move.toString() === moveId) {
+        console.log('this code runs?')
+        moveUserData = polemove
+      }
+    }
+
+    const polemove = await Polemove.findById(moveId)
+    if (!polemove) {
+      const error = new Error('Move not found :(')
+      error.statusCode = 422
+      throw error
+    }
+
+    return res.status(200).json({
+      userMoveData: moveUserData,
+      polemoveData: polemove,
+    })
+
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+    next(err)
   }
-
-  return Polemove.find({ _id: moveId })
-    .then((polemove) => {
-      if (!polemove) {
-        const error = new Error('Move not found :(')
-        error.statusCode = 422
-        throw error
-      }
-
-      res.status(200).json({ message: 'Move fetched', polemove: polemove })
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500
-      }
-      next(err)
-    })
 }
-
-

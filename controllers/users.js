@@ -117,7 +117,7 @@ exports.addMoveToUser = async (req, res, next) => {
         user: user,
       })
     }
-
+    //removing
     if (mastered === null) {
       const updatedUser = await User.updateOne(
         { _id: userId },
@@ -138,7 +138,7 @@ exports.addMoveToUser = async (req, res, next) => {
 
     if (isMasteredAlready === undefined) {
       const addedMove = {
-        move: polemoveId,
+        move: polemove._id,
         userMoveData: {
           mastered: mastered,
         },
@@ -151,6 +151,8 @@ exports.addMoveToUser = async (req, res, next) => {
       const userWithPolemoveData = await User.findById(userId).populate({
         path: 'polemoves.move',
       })
+
+      console.log(userWithPolemoveData)
 
       return res.status(200).json({
         message: 'Move added succesfully',
@@ -201,7 +203,7 @@ exports.addNote = async (req, res, next) => {
         const updatedUser = await user.save()
         return res.status(200).json({
           message: 'Note added',
-          polemove: userMoveData
+          polemove: userMoveData,
         })
       }
     }
