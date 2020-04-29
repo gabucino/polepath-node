@@ -89,10 +89,10 @@ exports.secret = (req, res) => {
 
 //Moves
 
-exports.addMoveToUser = async (req, res, next) => {
+exports.moveProgressChange = async (req, res, next) => {
   try {
     const userId = req.body.userId
-    const polemoveId = ObjectId(req.body.polemoveId)
+    const polemoveId = req.body.polemoveId
     const mastered = req.body.mastered
 
     const polemove = await Polemove.find({ _id: polemoveId })
@@ -100,25 +100,25 @@ exports.addMoveToUser = async (req, res, next) => {
     const user = await User.findById(userId)
     const userCurrentMoves = user.polemoves
 
-    let isMasteredAlready
-    for (let i = 0; i < userCurrentMoves.length; i++) {
-      if (userCurrentMoves[i].move.toString() === polemoveId.toString()) {
-        console.log('I found a match')
-        isMasteredAlready = userCurrentMoves[i].userMoveData.mastered
-      }
-    }
-
+    //Index will be -1 if no match found or array length is 0
+    const index = userCurrentMoves.findIndex(
+      (polemove) => polemove.move.toString() === polemoveId
+    )
+    console.log(userCurrentMoves)
     if (
-      (mastered === null && isMasteredAlready === undefined) ||
-      mastered === isMasteredAlready
+      (mastered === 'null' && index === -1) ||
+      (userCurrentMoves[index] &&
+        mastered == userCurrentMoves[index].userMoveData.mastered.toString())
     ) {
+      console.log('NO CHANGES CODE RAN')
       return res.status(200).json({
         message: 'No changes added',
-        user: user,
       })
     }
-    //removing
+    //removing move from user
     if (mastered === null) {
+      console.log('DELETION CODE RAN')
+
       const updatedUser = await User.updateOne(
         { _id: userId },
         {
@@ -132,51 +132,61 @@ exports.addMoveToUser = async (req, res, next) => {
       console.log('Move succesfully removed from user')
       return res.status(200).json({
         message: 'Move removed from user',
-        user: updatedUser,
+        user: user,
       })
     }
 
-    if (isMasteredAlready === undefined) {
-      const addedMove = {
-        move: polemove._id,
-        userMoveData: {
-          mastered: mastered,
-        },
-        userNotes: [],
-      }
+    //Update existing value
+    if (index !== -1) {
+      console.log('UPDATE CODE RAN')
 
-      user.polemoves.push(addedMove)
-      await user.save()
-
-      const userWithPolemoveData = await User.findById(userId).populate({
-        path: 'polemoves.move',
-      })
-
-      console.log(userWithPolemoveData)
-
-      return res.status(200).json({
-        message: 'Move added succesfully',
-        user: userWithPolemoveData,
-      })
-    }
-
-    const updatedUser = await User.findOneAndUpdate(
-      { _id: userId, 'polemoves.move': polemoveId },
-      {
-        $set: {
-          polemoves: {
-            move: polemoveId,
-            userMoveData: {
-              mastered: mastered,
+      const updatedUser = await User.findOneAndUpdate(
+        { _id: userId, 'polemoves.move': polemoveId },
+        {
+          $set: {
+            polemoves: {
+              move: polemoveId,
+              userMoveData: {
+                mastered: mastered,
+                //TODO CHECK IF USERNOTES DONT GET LOST
+              },
             },
           },
         },
-      }
+        { new: true }
+      )
+      console.log(updatedUser.polemoves[index])
+      return res.status(200).json({
+        message: 'Move status changed',
+        userMoveData: updatedUser.polemoves[index].userMoveData,
+      })
+    }
+
+    //adding new move to user
+    console.log('CREATE CODE RAN')
+
+    const addedMove = {
+      move: polemoveId,
+      userMoveData: {
+        mastered: mastered,
+      },
+      userNotes: [],
+    }
+
+    user.polemoves.push(addedMove)
+    const updatedUser = await user.save()
+
+    // const userWithPolemoveData = await User.findById(userId).populate({
+    //   path: 'polemoves.move',
+    // })
+
+    const newIndex = updatedUser.polemoves.findIndex(
+      (polemove) => polemove.move.toString() === polemoveId
     )
 
-    res.status(200).json({
-      message: 'Move status changed',
-      user: updatedUser,
+    return res.status(200).json({
+      message: 'Move added succesfully',
+      userMoveData: updatedUser.polemoves[newIndex].userMoveData,
     })
   } catch (err) {
     if (!err.statusCode) {
@@ -188,7 +198,7 @@ exports.addMoveToUser = async (req, res, next) => {
 
 exports.addNote = async (req, res, next) => {
   try {
-    const userId = req.body.userId
+    const userId = req.user._id
     const polemoveId = req.body.polemoveId
     const note = req.body.note
 
@@ -203,7 +213,7 @@ exports.addNote = async (req, res, next) => {
         const updatedUser = await user.save()
         return res.status(200).json({
           message: 'Note added',
-          polemove: userMoveData,
+          updatedUserMoveData: userMoveData,
         })
       }
     }
@@ -216,4 +226,38 @@ exports.addNote = async (req, res, next) => {
     }
     next(err)
   }
+}
+
+exports.deleteNote = async (req, res, next) => {
+  const userId = req.user._id
+  const polemoveId = req.body.polemoveId
+  const noteId = req.body.noteId
+
+  //finding that note arr
+  const user = await User.findById(userId)
+  console.log('USER FOUND:', user.polemoves)
+
+  const polemove = user.polemoves.find(
+    (el) => el.move.toString() === polemoveId.toString()
+  )
+  console.log('I GOT THIS FAR:', polemove)
+
+  const notes = polemove.userMoveData.userNotes
+  console.log('NOTES:', notes)
+  const noteIndex = notes.findIndex(
+    (el) => el._id.toString() === noteId.toString()
+  )
+
+  if (noteIndex > -1) {
+    notes.splice(noteIndex, 1)
+  }
+
+  const updatedUser = await user.save()
+
+  console.log('RESULT:', updatedUser.polemoves[0].userMoveData.userNotes)
+
+  return res.status(200).json({
+    message: 'boring response',
+    notes: notes
+  })
 }

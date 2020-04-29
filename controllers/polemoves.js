@@ -63,6 +63,7 @@ exports.view = async (req, res, next) => {
     //I need to return two things: user related data, and general polemovedata
     const userMoves = req.user.polemoves
     let moveUserData
+    
 
     for (let polemove of userMoves) {
       console.log('Looping')
@@ -72,6 +73,8 @@ exports.view = async (req, res, next) => {
       }
     }
 
+    console.log('MOVEUSERDATA:', moveUserData)
+
     const polemove = await Polemove.findById(moveId)
     if (!polemove) {
       const error = new Error('Move not found :(')
@@ -80,8 +83,8 @@ exports.view = async (req, res, next) => {
     }
 
     return res.status(200).json({
-      userMoveData: moveUserData,
-      polemoveData: polemove,
+      userMoveData: moveUserData ? moveUserData.userMoveData : null,
+      poleMoveData: polemove,
     })
 
   } catch (err) {

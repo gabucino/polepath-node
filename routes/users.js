@@ -17,7 +17,7 @@ router.put(
       .withMessage('Please enter a valid email')
       .custom((value, { req }) => {
         return User.findOne({
-          email: value
+          email: value,
         }).then((userDoc) => {
           if (userDoc) {
             return Promise.reject('Email already exists. Please sign in.')
@@ -58,18 +58,28 @@ router.post(
 
 //Any protected page example
 
-router.post('/polemoves/addmovetouser', usersController.addMoveToUser)
-
-router.post('/polemoves/addnotes', usersController.addNote)
-
-
-
-router.get(
-  '/secret',
+router.post(
+  '/polemoves/addmovetouser',
   passport.authenticate('jwt', {
     session: false,
   }),
-  usersController.secret
+  usersController.moveProgressChange
+)
+
+router.post(
+  '/polemoves/addnotes',
+  passport.authenticate('jwt', {
+    session: false,
+  }),
+  usersController.addNote
+)
+
+router.post(
+  '/polemoves/deletenote',
+  passport.authenticate('jwt', {
+    session: false,
+  }),
+  usersController.deleteNote
 )
 
 module.exports = router
