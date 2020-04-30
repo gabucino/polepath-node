@@ -258,6 +258,28 @@ exports.deleteNote = async (req, res, next) => {
 
   return res.status(200).json({
     message: 'boring response',
-    notes: notes
+    notes: notes,
   })
+}
+
+//Add progressphoto
+
+exports.addProgressPhoto = async (req, res, next) => {
+  try {
+    const image = req.file
+
+    if (!image) {
+      return res.status(422).json({
+        message: 'Attached file is not an image'
+      })
+    }
+    
+//Multer generates imageurl
+    const imageUrl = req.file.path
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+    next(err)
+  }
 }

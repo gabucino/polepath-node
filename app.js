@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const dotenv = require('dotenv')
 const morgan = require('morgan')
+const multer = require('multer')
 // const cors = require('cors')
 
 const passportSetup = require('./config/passport-setup')
@@ -13,12 +14,33 @@ const polemovesRoutes = require('./routes/polemoves')
 
 const app = express()
 
+// const fileStorage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, 'images')
+//   },
+//   filename: (req, file, cb) => {
+//     cb(null, new Date().toISOString() + '-' + file.originalname)
+//   },
+// })
+
+// const fileFilter = (req, file, cb) => {
+//   if (
+//     file.mimetype === 'image/png' ||
+//     file.mimetype === 'image/jpeg' ||
+//     file.mimetype === 'image/jpg'
+//   ) {
+//     cb(null, true)
+//   } else {
+//     cb(null, false)
+//   }
+// }
+
 dotenv.config()
 // app.use(cors())
 
 app.use(bodyParser.json())
+// app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single())
 app.use(morgan('dev'))
-
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -26,7 +48,10 @@ app.use((req, res, next) => {
     'Access-Control-Allow-Methods',
     'OPTIONS, GET, POST, PUT, PATCH, DELETE'
   )
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Authorization')
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Authorization'
+  )
   next()
 })
 

@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const { body } = require('express-validator')
+const { upload } = require('../config/multer')
 
 const User = require('../models/users')
 const usersController = require('../controllers/users')
@@ -80,6 +81,23 @@ router.post(
     session: false,
   }),
   usersController.deleteNote
+)
+
+router.post(
+  '/polemoves/deletenote',
+  passport.authenticate('jwt', {
+    session: false,
+  }),
+  usersController.deleteNote
+)
+
+router.post(
+  '/polemoves/addphoto',
+  passport.authenticate('jwt', {
+    session: false,
+  }),
+  upload.single('image'),
+  usersController.addProgressPhoto
 )
 
 module.exports = router
