@@ -7,6 +7,8 @@ const usersController = require('../controllers/users')
 
 const passport = require('passport')
 
+const bunnyController = require('../util/bunny')
+
 //Create user
 
 router.put(
@@ -92,12 +94,18 @@ router.post(
 )
 
 router.post(
-  '/polemoves/addphoto',
+  '/polemoves/addprogressphoto',
   passport.authenticate('jwt', {
     session: false,
   }),
   upload.single('image'),
   usersController.addProgressPhoto
 )
+
+
+// router.get(
+//   '/bunnyget',
+//   bunnyController.bunnyUpload
+// )
 
 module.exports = router

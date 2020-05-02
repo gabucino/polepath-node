@@ -7,6 +7,8 @@ const { jsonSecret } = require('../config/keys')
 const bcrypt = require('bcrypt')
 const { validationResult } = require('express-validator')
 
+const bunnies = require('../util/bunny')
+
 // Auth
 signToken = (user) => {
   return jwt.sign(
@@ -266,16 +268,30 @@ exports.deleteNote = async (req, res, next) => {
 
 exports.addProgressPhoto = async (req, res, next) => {
   try {
+    console.log('POLEMOVEID:', req.body.polemoveId)
     const image = req.file
+    console.log('IMAGE RECIEVED:', image)
 
     if (!image) {
       return res.status(422).json({
-        message: 'Attached file is not an image'
+        message: 'Attached file is not an image',
       })
     }
-    
-//Multer generates imageurl
-    const imageUrl = req.file.path
+
+    const bunnyData = {
+      fileName: image.filename,
+      userId: req.user._id,
+      polemoveId: req.body.polemoveId
+    }
+
+    bunnies.upload(bunnyData)
+
+    return res.status(200).json({
+      message: 'Recieved photo',
+    })
+
+    // //Multer generates imageurl
+    //     const imageUrl = req.file.path
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500
