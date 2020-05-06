@@ -29,13 +29,19 @@ const userSchema = new Schema(
           type: Schema.Types.ObjectId,
           ref: 'Polemove',
         },
-        userMoveData: {
-          mastered: {
-            type: Boolean,
-            default: false,
-          },
-          userNotes: [{ text: String }],
+        mastered: {
+          type: Boolean,
+          default: false,
         },
+        userNotes: [
+          { text: String, timestamp: { type: Date, default: Date.now() } },
+        ],
+        userPhotos: [
+          {
+            filename: String,
+            date: { type: Date, default: Date.now() },
+          },
+        ],
       },
     ],
   },

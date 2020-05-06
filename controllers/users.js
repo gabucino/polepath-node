@@ -9,6 +9,15 @@ const { validationResult } = require('express-validator')
 
 const bunnies = require('../util/bunny')
 
+//Finding correct polemove
+
+const findMove = async () => {
+  const userId = req.user._id
+  const polemoveId = req.body.polemoveId
+
+  const user = await User.findById(userId)
+}
+
 // Auth
 signToken = (user) => {
   return jwt.sign(
@@ -93,7 +102,7 @@ exports.secret = (req, res) => {
 
 exports.moveProgressChange = async (req, res, next) => {
   try {
-    const userId = req.body.userId
+    const userId = req.user
     const polemoveId = req.body.polemoveId
     const mastered = req.body.mastered
 
@@ -110,7 +119,7 @@ exports.moveProgressChange = async (req, res, next) => {
     if (
       (mastered === 'null' && index === -1) ||
       (userCurrentMoves[index] &&
-        mastered == userCurrentMoves[index].userMoveData.mastered.toString())
+        mastered == userCurrentMoves[index].mastered.toString())
     ) {
       console.log('NO CHANGES CODE RAN')
       return res.status(200).json({
@@ -148,10 +157,7 @@ exports.moveProgressChange = async (req, res, next) => {
           $set: {
             polemoves: {
               move: polemoveId,
-              userMoveData: {
-                mastered: mastered,
-                //TODO CHECK IF USERNOTES DONT GET LOST
-              },
+              mastered: mastered,
             },
           },
         },
@@ -160,7 +166,7 @@ exports.moveProgressChange = async (req, res, next) => {
       console.log(updatedUser.polemoves[index])
       return res.status(200).json({
         message: 'Move status changed',
-        userMoveData: updatedUser.polemoves[index].userMoveData,
+        userMoveData: updatedUser.polemoves[index],
       })
     }
 
@@ -169,10 +175,8 @@ exports.moveProgressChange = async (req, res, next) => {
 
     const addedMove = {
       move: polemoveId,
-      userMoveData: {
-        mastered: mastered,
-      },
-      userNotes: [],
+      mastered: mastered,
+      // userNotes: [],
     }
 
     user.polemoves.push(addedMove)
@@ -188,7 +192,7 @@ exports.moveProgressChange = async (req, res, next) => {
 
     return res.status(200).json({
       message: 'Move added succesfully',
-      userMoveData: updatedUser.polemoves[newIndex].userMoveData,
+      userMoveData: updatedUser.polemoves[newIndex],
     })
   } catch (err) {
     if (!err.statusCode) {
@@ -206,21 +210,21 @@ exports.addNote = async (req, res, next) => {
 
     const user = await User.findById(userId)
 
-    for (let polemove of user.polemoves) {
-      const polemoveIdString = polemove.move.toString()
+    const foundMove = user.polemoves.find(
+      (move) => move.move.toString() === polemoveId
+    )
 
-      if (polemoveIdString === polemoveId) {
-        const userMoveData = polemove.userMoveData
-        userMoveData.userNotes.push({ text: note })
-        const updatedUser = await user.save()
-        return res.status(200).json({
-          message: 'Note added',
-          updatedUserMoveData: userMoveData,
-        })
-      }
+    if (!foundMove) {
+      return res.status(404).json({
+        message: 'Sorry, move not found with this user',
+      })
     }
-    return res.status(404).json({
-      message: 'Sorry, move not found with this user',
+
+    foundMove.userNotes.push({ text: note })
+    await user.save()
+    return res.status(200).json({
+      message: 'Note added',
+      updatedUserMoveData: foundMove.userNotes,
     })
   } catch (err) {
     if (!err.statusCode) {
@@ -244,7 +248,7 @@ exports.deleteNote = async (req, res, next) => {
   )
   console.log('I GOT THIS FAR:', polemove)
 
-  const notes = polemove.userMoveData.userNotes
+  const notes = polemove.userNotes
   console.log('NOTES:', notes)
   const noteIndex = notes.findIndex(
     (el) => el._id.toString() === noteId.toString()
@@ -256,11 +260,13 @@ exports.deleteNote = async (req, res, next) => {
 
   const updatedUser = await user.save()
 
-  console.log('RESULT:', updatedUser.polemoves[0].userMoveData.userNotes)
+  const foundMove = updatedUser.polemoves.find(
+    (move) => move.move.toString() === polemoveId
+  )
 
   return res.status(200).json({
     message: 'boring response',
-    notes: notes,
+    notes: foundMove.userNotes,
   })
 }
 
@@ -270,6 +276,7 @@ exports.addProgressPhoto = async (req, res, next) => {
   try {
     console.log('POLEMOVEID:', req.body.polemoveId)
     const image = req.file
+    const polemoveId = req.body.polemoveId
     console.log('IMAGE RECIEVED:', image)
 
     if (!image) {
@@ -278,20 +285,35 @@ exports.addProgressPhoto = async (req, res, next) => {
       })
     }
 
+
+
+    const user = await User.findById(req.user._id)
+
+    const polemove = user.polemoves.find(
+      (el) => el.move.toString() === polemoveId.toString()
+    )
+
+    polemove.userPhotos.push({})
+
+    await user.save()
+
+    //Setting up for bunny upload
+    const picId = polemove.userPhotos[polemove.userPhotos.length - 1]._id.toString()
+    const extension = image.mimetype.split('/')
+    
+    const bunnyFilename = `${picId}.${extension[1]}`
+
     const bunnyData = {
-      fileName: image.filename,
-      userId: req.user._id,
-      polemoveId: req.body.polemoveId
+      fsFileName: image.filename,
+      bunnyFileName: bunnyFilename
     }
 
     bunnies.upload(bunnyData)
 
     return res.status(200).json({
-      message: 'Recieved photo',
+      message: 'Photo uploaded to DB',
+      userPhotos: polemove.userPhotos,
     })
-
-    // //Multer generates imageurl
-    //     const imageUrl = req.file.path
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500

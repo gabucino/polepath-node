@@ -18,11 +18,11 @@ exports.bunnyGet = (req, res, next) => {
 }
 
 exports.upload =  data => {
-  const pic = fs.readFileSync(`./images/${data.fileName}`, '')
+  const pic = fs.readFileSync(`./images/${data.fsFileName}`, '')
 
   axios
     .put(
-      `https://storage.bunnycdn.com/polepath/users/${data.userId}/progressphotos/${data.polemoveId}/${data.fileName}`,
+      `https://storage.bunnycdn.com/polepath/users/progressphotos/${data.bunnyFileName}`,
       pic,
       {
         headers: {
@@ -34,7 +34,7 @@ exports.upload =  data => {
     .then((response) => {
         if (response.status === 201) {
             console.log(response.data)
-            fs.unlinkSync(`./images/${data.fileName}`);
+            fs.unlinkSync(`./images/${data.fsFileName}`);
 
         }
     })

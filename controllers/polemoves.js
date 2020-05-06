@@ -52,8 +52,8 @@ exports.viewAll = async (req, res, next) => {
 exports.view = async (req, res, next) => {
   try {
     //TODO: make sure to get user id too
-    const moveId = req.params.polemoveId
-    const isValid = ObjectId.isValid(moveId)
+    const polemoveId = req.params.polemoveId
+    const isValid = ObjectId.isValid(polemoveId)
     if (!isValid) {
       const error = new Error('Move id invalid')
       error.statusCode = 404
@@ -62,20 +62,12 @@ exports.view = async (req, res, next) => {
 
     //I need to return two things: user related data, and general polemovedata
     const userMoves = req.user.polemoves
-    let moveUserData
     
+    const foundMove = userMoves.find(
+      (move) => move.move.toString() === polemoveId
+    )
 
-    for (let polemove of userMoves) {
-      console.log('Looping')
-      if (polemove.move.toString() === moveId) {
-        console.log('this code runs?')
-        moveUserData = polemove
-      }
-    }
-
-    console.log('MOVEUSERDATA:', moveUserData)
-
-    const polemove = await Polemove.findById(moveId)
+    const polemove = await Polemove.findById(polemoveId)
     if (!polemove) {
       const error = new Error('Move not found :(')
       error.statusCode = 422
@@ -83,7 +75,7 @@ exports.view = async (req, res, next) => {
     }
 
     return res.status(200).json({
-      userMoveData: moveUserData ? moveUserData.userMoveData : null,
+      userMoveData: foundMove ? foundMove : null,
       poleMoveData: polemove,
     })
 
