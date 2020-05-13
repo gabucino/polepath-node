@@ -17,12 +17,12 @@ exports.bunnyGet = (req, res, next) => {
     })
 }
 
-exports.upload =  data => {
+exports.upload = (data) => {
   const pic = fs.readFileSync(`./images/${data.fsFileName}`, '')
 
   axios
     .put(
-      `https://storage.bunnycdn.com/polepath/users/progressphotos/${data.bunnyFileName}`,
+      `https://storage.bunnycdn.com/polepath/${data.path}/${data.bunnyFileName}`,
       pic,
       {
         headers: {
@@ -32,13 +32,30 @@ exports.upload =  data => {
       }
     )
     .then((response) => {
-        if (response.status === 201) {
-            console.log(response.data)
-            fs.unlinkSync(`./images/${data.fsFileName}`);
-
-        }
+      if (response.status === 201) {
+        console.log(response.data)
+        fs.unlinkSync(`./images/${data.fsFileName}`)
+      }
     })
     .catch((error) => {
       console.log(error)
     })
+}
+
+exports.getAll = async (data) => {
+  try {
+    const response = await axios.get(
+      `https://storage.bunnycdn.com/polepath/${data.path}/`,
+      {
+        headers: {
+          AccessKey: process.env.BUNNY_STORAGE_API_KEY,
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+
+    console.log('GETFILESRESP:', response)
+  } catch (err) {
+    console.error(err)
+  }
 }

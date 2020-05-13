@@ -102,10 +102,12 @@ router.post(
   usersController.addProgressPhoto
 )
 
-
 // router.get(
-//   '/bunnyget',
-//   bunnyController.bunnyUpload
+//   '/polemoves/getprogressphotos',
+//   passport.authenticate('jwt', {
+//     session: false,
+//   }),
+//   usersController.getProgressPhotos
 // )
 
 module.exports = router

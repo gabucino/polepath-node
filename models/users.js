@@ -25,7 +25,7 @@ const userSchema = new Schema(
     },
     polemoves: [
       {
-        move: {
+        refId: {
           type: Schema.Types.ObjectId,
           ref: 'Polemove',
         },
@@ -33,13 +33,14 @@ const userSchema = new Schema(
           type: Boolean,
           default: false,
         },
-        userNotes: [
+        notes: [
           { text: String, timestamp: { type: Date, default: Date.now() } },
         ],
-        userPhotos: [
+        photos: [
           {
             filename: String,
             date: { type: Date, default: Date.now() },
+            extension: String
           },
         ],
       },
