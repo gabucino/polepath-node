@@ -11,6 +11,7 @@ const passportSetup = require('./config/passport-setup')
 //Routes
 const usersRoutes = require('./routes/users')
 const polemovesRoutes = require('./routes/polemoves')
+const mediaRoutes = require('./routes/media')
 
 const app = express()
 
@@ -58,6 +59,7 @@ app.use((req, res, next) => {
 //Register routes
 app.use('/users', usersRoutes)
 app.use('/moves', polemovesRoutes)
+app.use('/media', mediaRoutes)
 
 //error handling middleaware
 app.use((error, req, res, next) => {

@@ -4,7 +4,7 @@ const Schema = mongoose.Schema
 
 const userSchema = new Schema(
   {
-    username: {
+    stageName: {
       type: String,
       required: true,
     },
@@ -36,13 +36,7 @@ const userSchema = new Schema(
         notes: [
           { text: String, timestamp: { type: Date, default: Date.now() } },
         ],
-        photos: [
-          {
-            filename: String,
-            date: { type: Date, default: Date.now() },
-            extension: String
-          },
-        ],
+        photos: [{ type: Schema.Types.ObjectId, ref: 'Media' }],
       },
     ],
   },

@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 
-
 const Schema = mongoose.Schema
 
 const poleMovesSchema = new Schema(
@@ -20,7 +19,7 @@ const poleMovesSchema = new Schema(
       type: String,
     },
     //users public photos and notes
-    // usersPhotos: [{ type: String }],
+    // photos: []
     // usersNotes: [{ type: String }],
   },
   { timestamps: true }

@@ -1,5 +1,6 @@
 const User = require('../models/users')
 const Polemove = require('../models/polemoves')
+const Media = require('../models/media')
 const ObjectId = require('mongodb').ObjectID
 
 const jwt = require('jsonwebtoken')
@@ -9,14 +10,6 @@ const { validationResult } = require('express-validator')
 
 const bunnies = require('../util/bunny')
 const moment = require('moment')
-//Finding correct polemove
-
-const findMove = async () => {
-  const userId = req.user._id
-  const polemoveId = req.body.polemoveId
-
-  const user = await User.findById(userId)
-}
 
 // Auth
 signToken = (user) => {
@@ -41,14 +34,14 @@ exports.create = async (req, res, next) => {
       throw error
     }
 
-    const username = req.body.username
+    const stageName = req.body.stageName
     const email = req.body.email
     const password = req.body.password
 
     const hashedPw = await bcrypt.hash(password, 12)
     const user = new User({
       email: email,
-      username: username,
+      stageName: stageName,
       password: hashedPw,
     })
     const createdUser = await user.save()
@@ -69,21 +62,39 @@ exports.login = async (req, res) => {
   console.log(console.log('Current user is:' + req.user))
   const token = signToken(req.user)
 
-  const userWithPolemoveData = await User.findById(req.user._id).populate({
-    path: 'polemoves.refId',
+  const user = await User.findById(req.user._id)
+
+  // const userWithPolemoveData = await User.findById(req.user._id).populate({
+  //   path: 'polemoves.refId',
+  // })
+
+  const generalPolemoves = await Polemove.find()
+
+  //Returning Polemove info
+
+  const newPolemoves = user.polemoves.map((el) => {
+    const currentMove = generalPolemoves.find((genEl) => genEl._id.toString() === el.refId.toString())
+
+    if (currentMove) {
+      return {
+        userData: { ...el.toObject() },
+        generalData: { ...currentMove.toObject() },
+      }
+    }
   })
 
+
+
+  console.log(newPolemoves)
+
   res.status(200).json({
+    message: 'Login Successful',
     token: token,
     role: req.user.role,
-    message: 'Login Successful',
-    userData: {
-      _id: req.user._id,
-      username: req.user.username,
-      email: req.user.email,
-      photoURL: req.user.photoURL,
-      polemoves: userWithPolemoveData.polemoves,
-    },
+    stageName: user.stageName,
+    email: user.email,
+    photoURL: user.photoURL,
+    polemoves: newPolemoves
   })
 }
 
@@ -274,46 +285,74 @@ exports.deleteNote = async (req, res, next) => {
 exports.addProgressPhoto = async (req, res, next) => {
   try {
     console.log('POLEMOVEID:', req.body.polemoveId)
-    const image = req.file
     const polemoveId = req.body.polemoveId
     const photodate = req.body.date
-    console.log(photodate)
-    console.log('IMAGE RECIEVED:', image)
+    const privacy = req.body.privacy
+    const category = req.body.category
+
+    const image = req.file
+    const extension = image.mimetype.split('/').pop()
 
     if (!image) {
       return res.status(422).json({
         message: 'Attached file is not an image',
       })
     }
-
     const user = await User.findById(req.user._id)
+
+    //DB photos upload
+    const photo = new Media({
+      category: 'photo',
+      privacy: privacy,
+      extension: extension,
+      date: req.body.photodate,
+      userRef: user._id,
+      polemoveRef: polemoveId,
+    })
+
+    const createdMedia = await photo.save()
 
     const polemove = user.polemoves.find(
       (el) => el.refId.toString() === polemoveId.toString()
     )
 
-    // const date = moment(req.body.date).format('YYYY MM DD')
-    const extension = image.mimetype.split('/').pop()
-    polemove.photos.push({ date: req.body.date, extension: extension })
+    polemove.photos.push(createdMedia)
 
     await user.save()
 
-    //Setting up for bunny upload
-    const picId = polemove.photos[polemove.photos.length - 1]._id.toString()
+    //Bunny upload
+    const picId = createdMedia._id.toString()
 
     const bunnyFileName = `${picId}.${extension}`
 
     const bunnyData = {
       fsFileName: image.filename,
       bunnyFileName: bunnyFileName,
-      path: `users/${req.user._id}/${polemoveId}/progressphotos`,
+      path: `users/${req.user._id}/${polemoveId}`,
     }
 
-    bunnies.upload(bunnyData)
+    await bunnies.upload(bunnyData)
+
+    //Public DB uload
+    if (privacy === 'public') {
+      const publicPolemove = await Polemove.findById(polemoveId)
+    }
+    console.log('THAT SHIT', polemove.photos[0])
+    //Response
+
+    const userPhotos = await Media.find({
+      polemoveRef: polemoveId,
+      userRef: req.user._id,
+    })
+    const newPhotos = userPhotos.map((el) => ({
+      _id: el._id,
+      date: moment(el.date.getTime()).format('D MMMM YYYY'),
+      path: `https://polepath.b-cdn.net/users/${req.user._id}/${polemoveId}/${el._id}.${el.extension}`,
+    }))
 
     return res.status(200).json({
-      message: 'Photo uploaded to DB',
-      photos: polemove.photos,
+      message: 'Photo uploaded',
+      photos: newPhotos,
     })
   } catch (err) {
     if (!err.statusCode) {

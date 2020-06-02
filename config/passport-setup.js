@@ -77,7 +77,7 @@ passport.use(
           done(null, existingUser)
         } else {
           const user = await new User({
-            username: profile.displayName,
+            stageName: profile.displayName,
             googleId: profile.id,
             email: profile._json.email,
             photoURL: profile._json.picture,
@@ -111,7 +111,7 @@ passport.use(
         const newUser = new User({
           facebookId: profile.id,
           email: profile.emails[0].value,
-          username: profile.name.givenName,
+          stageName: profile.name.givenName,
           photoURL: profile.photos[0].value,
         })
 

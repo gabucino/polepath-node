@@ -1,9 +1,10 @@
 const Polemove = require('../models/polemoves')
 const ObjectId = require('mongoose').Types.ObjectId
 const User = require('../models/users')
+const Media = require('../models/media')
+
 const bunnies = require('../util/bunny')
 const moment = require('moment')
-
 
 exports.create = async (req, res, next) => {
   try {
@@ -36,11 +37,18 @@ exports.create = async (req, res, next) => {
 
 exports.viewAll = async (req, res, next) => {
   try {
+    //get all moves
     const polemoves = await Polemove.find()
-
+    
     if (!polemoves) {
       res.status(204).json({ message: 'No moves found :(' })
     }
+    //get userspecific data
+    const userId= req.user._id
+    const user = await User.findById(userId)
+    const userPolemoveData = user.polemoves
+
+
     res
       .status(200)
       .json({ message: 'Moves fetched succesfully', polemoves: polemoves })
@@ -64,11 +72,19 @@ exports.view = async (req, res, next) => {
     }
 
     //I need to return two things: user related data, and general polemovedata
-    const userMoves = req.user.polemoves
+    const user = await User.findById(req.user._id)
 
-    const foundMove = userMoves.find(
+    const foundMove = user.polemoves.find(
       (move) => move.refId.toString() === polemoveId
     )
+
+    const photos =await  Media.find({polemoveRef: ObjectId(polemoveId)})
+
+    console.log(photos)
+
+    // const userWithPolemoveData = await User.findById(req.user._id).populate({
+    //   path: 'polemoves.refId',
+    // })
 
     const polemove = await Polemove.findById(polemoveId)
     if (!polemove) {
@@ -80,28 +96,18 @@ exports.view = async (req, res, next) => {
     // const bunnyData = {
     //   path: `users/${req.user._id}/${polemoveId}/progressphotos`,
     // }
-
+    let newPhotos
     // bunnies.getAll(bunnyData)
-
-    const photos = foundMove.photos
-
-    console.log('CHECK THIS OUT', moment(photos[0].date.getTime()).format('D MMMM YYYY'))
-
-    const newPhotos = photos.map((el) => ({
-      _id: el._id,
-      date: moment(el.date.getTime()).format('D MMMM YYYY'),
-      path: `https://polepath.b-cdn.net/users/${req.user._id}/${polemoveId}/progressphotos/${el._id}.${el.extension}`,
-    }))
-
-    console.log('PHOTOS:', photos)
-    console.log('NEWPHOTOS:', newPhotos)
-
-    const respData = {
-      ...foundMove.toObject(),
-      photos: newPhotos,
+    if (foundMove) {
+      if (photos) {
+        newPhotos = photos.map((el) => ({
+          _id: el._id,
+          date: moment(el.date.getTime()).format('D MMMM YYYY'),
+          path: `https://polepath.b-cdn.net/users/${req.user._id}/${polemoveId}/${el._id}.${el.extension}`,
+        }))
+      }
     }
 
-    console.log('RSP?', respData)
     return res.status(200).json({
       userMoveData: foundMove
         ? {
