@@ -35,6 +35,12 @@ exports.upload = async (data) => {
     if (response.status === 201) {
       console.log(response.data)
       fs.unlinkSync(`./images/${data.fsFileName}`)
+    } else {
+      const error = new Error(
+        "Bunny upload failed :("
+      )
+      error.statusCode = 401
+      throw error
     }
   } catch (error) {
     console.log(error)

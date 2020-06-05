@@ -10,14 +10,14 @@ const poleMovesSchema = new Schema(
     },
     otherNames: [{ type: String }],
     level: { type: String },
-    photoURL: {
+    mainPhoto: {
       type: String,
-      default:
-        'https://images.fineartamerica.com/images/artworkimages/mediumlarge/3/pole-dancing-unicorn-cute-funny-pole-dance-gift-thomas-larch.jpg',
     },
     description: {
       type: String,
     },
+    extension: { type: String },
+
     //users public photos and notes
     // photos: []
     // usersNotes: [{ type: String }],
