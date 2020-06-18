@@ -1,6 +1,8 @@
 const User = require('../models/users')
 const Polemove = require('../models/polemoves')
 const Media = require('../models/media')
+const History = require('../models/history')
+
 const ObjectId = require('mongodb').ObjectID
 
 const jwt = require('jsonwebtoken')
@@ -9,6 +11,7 @@ const bcrypt = require('bcrypt')
 const { validationResult } = require('express-validator')
 
 const bunnies = require('../util/bunny')
+const helpers = require('../util/helpers')
 const moment = require('moment')
 
 // Auth
@@ -62,6 +65,7 @@ exports.login = async (req, res) => {
   console.log(console.log('Current user is:' + req.user))
   const token = signToken(req.user)
 
+  console.log('THIS FUN PIECE OF CODE SHOULD RUN');
   const user = await User.findById(req.user._id)
 
   // const userWithPolemoveData = await User.findById(req.user._id).populate({
@@ -73,7 +77,9 @@ exports.login = async (req, res) => {
   //Returning Polemove info
 
   const newPolemoves = user.polemoves.map((el) => {
-    const currentMove = generalPolemoves.find((genEl) => genEl._id.toString() === el.refId.toString())
+    const currentMove = generalPolemoves.find(
+      (genEl) => genEl._id.toString() === el.refId.toString()
+    )
 
     if (currentMove) {
       return {
@@ -82,8 +88,6 @@ exports.login = async (req, res) => {
       }
     }
   })
-
-
 
   console.log(newPolemoves)
 
@@ -94,7 +98,7 @@ exports.login = async (req, res) => {
     stageName: user.stageName,
     email: user.email,
     photoURL: user.photoURL,
-    polemoves: newPolemoves
+    polemoves: newPolemoves,
   })
 }
 
@@ -117,6 +121,7 @@ exports.moveProgressChange = async (req, res, next) => {
     const polemoveId = req.body.polemoveId
     const mastered = req.body.mastered
 
+    const historyType = mastered ? 'mastered' : 'started'
     const polemove = await Polemove.find({ _id: polemoveId })
 
     const user = await User.findById(userId)
@@ -152,6 +157,32 @@ exports.moveProgressChange = async (req, res, next) => {
         }
       )
       console.log('Move succesfully removed from user')
+
+      //removing mediafiles from bunny
+
+      const mediaFiles = await Media.find({
+        userRef: req.user._id,
+        polemoveRef: polemoveId,
+      })
+
+      mediaFiles.forEach((file) =>
+        bunnies.delete({
+          polemoveId: polemoveId,
+          userId: req.user._id,
+          filename: `${file._id}.${file.extension}`,
+        })
+      )
+
+      //removing media&history records
+      await Media.deleteMany({
+        userRef: ObjectId(req.user._id),
+        polemoveRef: ObjectId(polemoveId),
+      })
+      await History.deleteMany({
+        userRef: ObjectId(req.user._id),
+        polemoveRef: ObjectId(polemoveId),
+      })
+
       return res.status(200).json({
         message: 'Move removed from user',
         user: user,
@@ -174,6 +205,11 @@ exports.moveProgressChange = async (req, res, next) => {
         },
         { new: true }
       )
+
+      if (mastered) {
+        helpers.createHistory(historyType, ObjectId(req.user._id), ObjectId(polemoveId))
+      }
+
       console.log(updatedUser.polemoves[index])
       return res.status(200).json({
         message: 'Move status changed',
@@ -199,6 +235,10 @@ exports.moveProgressChange = async (req, res, next) => {
     const newIndex = updatedUser.polemoves.findIndex(
       (polemove) => polemove.refId.toString() === polemoveId
     )
+
+    //Creating history record
+
+    helpers.createHistory(historyType, ObjectId(req.user._id), ObjectId(polemoveId))
 
     return res.status(200).json({
       message: 'Move added succesfully',
@@ -280,79 +320,36 @@ exports.deleteNote = async (req, res, next) => {
   })
 }
 
-//Add progressphoto
-
-exports.addProgressPhoto = async (req, res, next) => {
+exports.getHistory = async (req, res, next) => {
   try {
-    console.log('POLEMOVEID:', req.body.polemoveId)
-    const polemoveId = req.body.polemoveId
-    const photodate = req.body.date
-    const privacy = req.body.privacy
-    const category = req.body.category
+    const history = await History.find({ userRef: ObjectId(req.user._id) })
+      .sort({ createdAt: -1 })
+      .limit(5)
 
-    const image = req.file
-    const extension = image.mimetype.split('/').pop()
-
-    if (!image) {
-      return res.status(422).json({
-        message: 'Attached file is not an image',
-      })
-    }
-    const user = await User.findById(req.user._id)
-
-    //DB photos upload
-    const photo = new Media({
-      category: 'photo',
-      privacy: privacy,
-      extension: extension,
-      date: req.body.photodate,
-      userRef: user._id,
-      polemoveRef: polemoveId,
-    })
-
-    const createdMedia = await photo.save()
-
-    const polemove = user.polemoves.find(
-      (el) => el.refId.toString() === polemoveId.toString()
-    )
-
-    polemove.photos.push(createdMedia)
-
-    await user.save()
-
-    //Bunny upload
-    const picId = createdMedia._id.toString()
-
-    const bunnyFileName = `${picId}.${extension}`
-
-    const bunnyData = {
-      fsFileName: image.filename,
-      bunnyFileName: bunnyFileName,
-      path: `users/${req.user._id}/${polemoveId}`,
+    const getPolemove = async (item) => {
+      const polemove = await Polemove.findById(item.polemoveRef)
+      if (polemove) {
+        return {
+          ...item.toObject(),
+          name: polemove.name,
+        }
+      }
     }
 
-    await bunnies.upload(bunnyData)
-
-    //Public DB uload
-    if (privacy === 'public') {
-      const publicPolemove = await Polemove.findById(polemoveId)
+    const getData = async () => {
+      return Promise.all(
+        history.map((item) => {
+          return getPolemove(item)
+        })
+      )
     }
-    console.log('THAT SHIT', polemove.photos[0])
-    //Response
 
-    const userPhotos = await Media.find({
-      polemoveRef: polemoveId,
-      userRef: req.user._id,
-    })
-    const newPhotos = userPhotos.map((el) => ({
-      _id: el._id,
-      date: moment(el.date.getTime()).format('D MMMM YYYY'),
-      path: `https://polepath.b-cdn.net/users/${req.user._id}/${polemoveId}/${el._id}.${el.extension}`,
-    }))
+    const modifiedHistory = await getData()
+    console.log(modifiedHistory)
 
     return res.status(200).json({
-      message: 'Photo uploaded',
-      photos: newPhotos,
+      message: 'History retrieved',
+      history: modifiedHistory,
     })
   } catch (err) {
     if (!err.statusCode) {

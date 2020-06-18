@@ -7,13 +7,25 @@ const usersController = require('../controllers/users')
 
 const passport = require('passport')
 
-const bunnyController = require('../util/bunny')
 
 //Create user
 
 router.put(
   '/create',
   [
+    body('stageName')
+      .not()
+      .isEmpty()
+      .withMessage("Don't forget to enter your stage name!")
+      .custom((value => {
+        return User.findOne({
+          stageName: value
+        }).then((userDoc) => {
+          if (userDoc) {
+            return Promise.reject('Sorry, that stagename is already taken. Please, choose another one.')
+          }
+        })
+      })),
     body('email')
       .normalizeEmail({ gmail_remove_dots: false })
       .isEmail()
@@ -27,6 +39,13 @@ router.put(
           }
         })
       }),
+    body('password', 'Password must be at least 5 characters long')
+      .not()
+      .isEmpty()
+      .isLength({ min: 5 })
+    // body('confirmPassword').custom(
+    //   (value, { req }) => value === req.body.password
+    // ),
   ],
   usersController.create
 )
@@ -93,13 +112,10 @@ router.post(
   usersController.deleteNote
 )
 
-router.post(
-  '/polemoves/addprogressphoto',
-  passport.authenticate('jwt', {
-    session: false,
-  }),
-  upload.single('image'),
-  usersController.addProgressPhoto
+router.get(
+  '/history',
+  passport.authenticate('jwt', { session: false }),
+  usersController.getHistory
 )
 
 // router.get(

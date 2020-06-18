@@ -102,8 +102,11 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       console.log('AccessToken', accessToken)
       console.log('profile', profile)
+      console.log('ProfileId', profile.id)
       try {
-        const existingUser = await User.findOne({ facebookId: profile.id })
+        const existingUser = await User.findOne({
+          facebookId: profile.id,
+        })
 
         if (existingUser) {
           return done(null, existingUser)

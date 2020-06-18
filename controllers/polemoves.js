@@ -8,8 +8,6 @@ const moment = require('moment')
 
 exports.create = async (req, res, next) => {
   try {
-    console.log('FILE:', req.file)
-    console.log('BODY:', req.body)
     const name = req.body.name
     let otherNames = req.body.otherNames
     const level = req.body.level
@@ -17,23 +15,28 @@ exports.create = async (req, res, next) => {
     const description = req.body.description
     let extension = null
 
+    console.log('First othernames',otherNames)
+
     if (mainPhoto) {
       extension = mainPhoto.mimetype.split('/').pop()
     }
 
-    if (otherNames !== undefined) {
+    if (otherNames !== "undefined") {
       if (otherNames.includes(',')) {
         otherNames = otherNames.split(',')
+      } else {
+        otherNames[0] = otherNames
       }
     } else {
       otherNames = []
     }
 
+
     const newMove = new Polemove({
       name: name,
       otherNames: otherNames,
       level: level,
-      description: description,
+      description: description === "undefined" ? '' : description,
       extension: extension,
     })
 
@@ -85,7 +88,7 @@ exports.viewAll = async (req, res, next) => {
             ...el.toObject(),
             photoURL: el.extension
               ? `https://polepath.b-cdn.net/mainphotos/${el._id}.${el.extension}`
-              : 'https://scontent.fakl2-1.fna.fbcdn.net/v/t1.0-9/p960x960/82307430_132194544922526_6226538982365200384_o.jpg?_nc_cat=106&_nc_sid=85a577&_nc_ohc=-BRwJWxlU1wAX9Pm935&_nc_ht=scontent.fakl2-1.fna&_nc_tp=6&oh=03b06344205f6c8a3236fd0330a838c9&oe=5EFF13FC',
+              : 'https://polepath.b-cdn.net/mainphotos/common.jpg'
           },
         }
       } else {
@@ -94,7 +97,7 @@ exports.viewAll = async (req, res, next) => {
             ...el.toObject(),
             photoURL: el.extension
               ? `https://polepath.b-cdn.net/mainphotos/${el._id}.${el.extension}`
-              : 'https://scontent.fakl2-1.fna.fbcdn.net/v/t1.0-9/p960x960/82307430_132194544922526_6226538982365200384_o.jpg?_nc_cat=106&_nc_sid=85a577&_nc_ohc=-BRwJWxlU1wAX9Pm935&_nc_ht=scontent.fakl2-1.fna&_nc_tp=6&oh=03b06344205f6c8a3236fd0330a838c9&oe=5EFF13FC',
+              : 'https://polepath.b-cdn.net/mainphotos/common.jpg'
           },
         }
       }
@@ -129,13 +132,12 @@ exports.view = async (req, res, next) => {
       (move) => move.refId.toString() === polemoveId
     )
 
-    const photos = await Media.find({ polemoveRef: ObjectId(polemoveId) })
+    const photos = await Media.find({
+      polemoveRef: ObjectId(polemoveId),
+      userRef: ObjectId(req.user._id),
+    })
 
     console.log(photos)
-
-    // const userWithPolemoveData = await User.findById(req.user._id).populate({
-    //   path: 'polemoves.refId',
-    // })
 
     const polemove = await Polemove.findById(polemoveId)
     if (!polemove) {

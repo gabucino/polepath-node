@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+mongoose.set('useCreateIndex', true);
 
 const Schema = mongoose.Schema
 
@@ -7,11 +8,13 @@ const userSchema = new Schema(
     stageName: {
       type: String,
       required: true,
+      unique: true
     },
     googleId: String,
     facebookId: String,
     email: {
       type: String,
+      unique: true
     },
     password: {
       type: String,
