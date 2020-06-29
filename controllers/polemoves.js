@@ -88,7 +88,7 @@ exports.viewAll = async (req, res, next) => {
             ...el.toObject(),
             photoURL: el.extension
               ? `https://polepath.b-cdn.net/mainphotos/${el._id}.${el.extension}`
-              : 'https://polepath.b-cdn.net/mainphotos/common.jpg'
+              : null
           },
         }
       } else {
@@ -97,12 +97,13 @@ exports.viewAll = async (req, res, next) => {
             ...el.toObject(),
             photoURL: el.extension
               ? `https://polepath.b-cdn.net/mainphotos/${el._id}.${el.extension}`
-              : 'https://polepath.b-cdn.net/mainphotos/common.jpg'
+              : null
           },
         }
       }
     })
 
+    console.log('the result is:::', newPolemoves);
     res
       .status(200)
       .json({ message: 'Moves fetched succesfully', polemoves: newPolemoves })

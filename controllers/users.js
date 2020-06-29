@@ -65,12 +65,12 @@ exports.login = async (req, res) => {
   console.log(console.log('Current user is:' + req.user))
   const token = signToken(req.user)
 
-  console.log('THIS FUN PIECE OF CODE SHOULD RUN');
   const user = await User.findById(req.user._id)
 
   // const userWithPolemoveData = await User.findById(req.user._id).populate({
   //   path: 'polemoves.refId',
   // })
+
 
   const generalPolemoves = await Polemove.find()
 
@@ -89,7 +89,6 @@ exports.login = async (req, res) => {
     }
   })
 
-  console.log(newPolemoves)
 
   res.status(200).json({
     message: 'Login Successful',
@@ -109,8 +108,25 @@ exports.logout = (req, res) => {
   })
 }
 
-exports.secret = (req, res) => {
-  res.json({ secret: 'resource' })
+
+
+exports.changeStageName = async(req, res, next) => {
+  const newName = req.body.stageName
+
+  const existingName = await User.findOne({stageName: newName})
+
+  if (existingName) {
+    return res.status(409).json({
+      message: 'That stage name is not available, please pick another one',
+    })
+  }
+
+await User.findByIdAndUpdate(req.user._id, {stageName: newName})
+
+res.status(200).json({
+  message: 'Stage name change successful'
+})
+
 }
 
 //Moves

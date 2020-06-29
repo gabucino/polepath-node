@@ -4,8 +4,12 @@ const bodyParser = require('body-parser')
 const dotenv = require('dotenv')
 const morgan = require('morgan')
 const multer = require('multer')
+const fs = require('fs')
+const path = require('path')
+const https = require('https')
 // const cors = require('cors')
-
+const helmet = require('helmet')
+const compression = require('compression')
 const passportSetup = require('./config/passport-setup')
 
 //Routes
@@ -41,7 +45,6 @@ dotenv.config()
 
 app.use(bodyParser.json())
 // app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single())
-app.use(morgan('dev'))
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -56,10 +59,24 @@ app.use((req, res, next) => {
   next()
 })
 
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname, 'access.log'),
+  { flags: 'a' }
+)
+
+app.use(morgan('dev', {stream: accessLogStream}))
+
+
+
 //Register routes
 app.use('/users', usersRoutes)
 app.use('/moves', polemovesRoutes)
 app.use('/media', mediaRoutes)
+
+
+
+app.use(helmet())
+app.use(compression())
 
 //error handling middleaware
 app.use((error, req, res, next) => {
@@ -78,6 +95,5 @@ mongoose
   })
   .then((result) => {
     const server = app.listen(process.env.PORT || 8080)
-
   })
   .catch((err) => console.log(err))

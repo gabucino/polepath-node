@@ -78,6 +78,11 @@ router.post(
   usersController.login
 )
 
+
+router.post('/changestagename', passport.authenticate('jwt', {
+  session: false
+}), usersController.changeStageName)
+
 //Any protected page example
 
 router.post(

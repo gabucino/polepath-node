@@ -76,13 +76,21 @@ passport.use(
           console.log('user already exists:' + existingUser)
           done(null, existingUser)
         } else {
+          let stageName = profile.name.givenName
+          const stageNameCheck = await User.findOne({
+            stageName: profile.name.givenName,
+          })
+          if (stageNameCheck) {
+            const userCount = await User.count({})
+            stageName = stageName + (userCount + 1)
+          }
+
           const user = await new User({
-            stageName: profile.displayName,
+            stageName: stageName,
             googleId: profile.id,
             email: profile._json.email,
             photoURL: profile._json.picture,
           }).save()
-          console.log('new user created' + user)
           done(null, user)
         }
       } catch (err) {
