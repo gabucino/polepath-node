@@ -12,12 +12,23 @@ const helmet = require('helmet')
 const compression = require('compression')
 const passportSetup = require('./config/passport-setup')
 
+const app = express()
+
+app.use(express.static(path.join(__dirname, 'build')));
+
+
+app.get('/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
 //Routes
 const usersRoutes = require('./routes/users')
 const polemovesRoutes = require('./routes/polemoves')
 const mediaRoutes = require('./routes/media')
 
-const app = express()
+
+const privateKey = fs.readFileSync('server.key')
+const certificate = fs.readFileSync('server.cert')
 
 // const fileStorage = multer.diskStorage({
 //   destination: (req, file, cb) => {
@@ -64,16 +75,12 @@ const accessLogStream = fs.createWriteStream(
   { flags: 'a' }
 )
 
-app.use(morgan('dev', {stream: accessLogStream}))
-
-
+app.use(morgan('dev', { stream: accessLogStream }))
 
 //Register routes
 app.use('/users', usersRoutes)
 app.use('/moves', polemovesRoutes)
 app.use('/media', mediaRoutes)
-
-
 
 app.use(helmet())
 app.use(compression())
@@ -94,6 +101,6 @@ mongoose
     useUnifiedTopology: true,
   })
   .then((result) => {
-    const server = app.listen(process.env.PORT || 8080)
+    const server = app.listen(process.env.PORT || 8080) //https.createServer({ key: privateKey, cert: certificate }, app)
   })
   .catch((err) => console.log(err))
