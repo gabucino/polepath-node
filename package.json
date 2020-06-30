@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "The most amazing app for aerial nerds",
   "main": "app.js",
+  "engines": {
+    "node": "10.20.1"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "HTTPS=true nodemon app.js"

@@ -27,8 +27,8 @@ const polemovesRoutes = require('./routes/polemoves')
 const mediaRoutes = require('./routes/media')
 
 
-const privateKey = fs.readFileSync('server.key')
-const certificate = fs.readFileSync('server.cert')
+// const privateKey = fs.readFileSync('server.key')
+// const certificate = fs.readFileSync('server.cert')
 
 // const fileStorage = multer.diskStorage({
 //   destination: (req, file, cb) => {
