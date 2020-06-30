@@ -78,9 +78,9 @@ const accessLogStream = fs.createWriteStream(
 app.use(morgan('dev', { stream: accessLogStream }))
 
 //Register routes
-app.use('/users', usersRoutes)
-app.use('/moves', polemovesRoutes)
-app.use('/media', mediaRoutes)
+app.use('/api/users', usersRoutes)
+app.use('/api/moves', polemovesRoutes)
+app.use('/api/media', mediaRoutes)
 
 app.use(helmet())
 app.use(compression())
