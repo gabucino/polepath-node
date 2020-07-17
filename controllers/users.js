@@ -89,6 +89,8 @@ exports.login = async (req, res) => {
     }
   })
 
+  console.log('confirm');
+
 
   res.status(200).json({
     message: 'Login Successful',

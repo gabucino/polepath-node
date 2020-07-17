@@ -16,10 +16,21 @@ const app = express()
 
 app.use(express.static(path.join(__dirname, 'build')));
 
+// app.use(cors())
 
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
+
+
+
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'OPTIONS, GET, POST, PUT, PATCH, DELETE'
+  )
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  next()
+})
+
 
 //Routes
 const usersRoutes = require('./routes/users')
@@ -84,6 +95,12 @@ app.use('/api/media', mediaRoutes)
 
 app.use(helmet())
 app.use(compression())
+
+
+app.get('/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
 
 //error handling middleaware
 app.use((error, req, res, next) => {
