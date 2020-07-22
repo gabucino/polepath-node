@@ -40,15 +40,14 @@ passport.use(
     { usernameField: 'email' },
     async (email, password, done) => {
       try {
+        console.log('reacher');
         const user = await User.findOne({ email })
-        if (!user) {
-          return done(null, false)
-        }
         const isPwMatch = await bcrypt.compare(password, user.password)
         if (!isPwMatch) {
           return done(null, false)
         }
         //passport sets req.user
+        console.log('reaching');
         done(null, user)
       } catch (err) {
         done(err, false)

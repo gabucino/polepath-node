@@ -7,7 +7,6 @@ const usersController = require('../controllers/users')
 
 const passport = require('passport')
 
-
 //Create user
 
 router.put(
@@ -17,15 +16,17 @@ router.put(
       .not()
       .isEmpty()
       .withMessage("Don't forget to enter your stage name!")
-      .custom((value => {
+      .custom((value) => {
         return User.findOne({
-          stageName: value
+          stageName: value,
         }).then((userDoc) => {
           if (userDoc) {
-            return Promise.reject('Sorry, that stagename is already taken. Please, choose another one.')
+            return Promise.reject(
+              'Sorry, that stagename is already taken. Please, choose another one.'
+            )
           }
         })
-      })),
+      }),
     body('email')
       .normalizeEmail({ gmail_remove_dots: false })
       .isEmail()
@@ -42,7 +43,7 @@ router.put(
     body('password', 'Password must be at least 5 characters long')
       .not()
       .isEmpty()
-      .isLength({ min: 5 })
+      .isLength({ min: 5 }),
     // body('confirmPassword').custom(
     //   (value, { req }) => value === req.body.password
     // ),
@@ -51,8 +52,11 @@ router.put(
 )
 
 router.post(
-  '/login',
-  passport.authenticate('local', { session: false }),
+  '/login', usersController.checkForErrors,
+    passport.authenticate(
+      'local', 
+      { session: false }
+    ),
   usersController.login
 )
 
@@ -78,10 +82,13 @@ router.post(
   usersController.login
 )
 
-
-router.post('/changestagename', passport.authenticate('jwt', {
-  session: false
-}), usersController.changeStageName)
+router.post(
+  '/changestagename',
+  passport.authenticate('jwt', {
+    session: false,
+  }),
+  usersController.changeStageName
+)
 
 //Any protected page example
 

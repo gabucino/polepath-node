@@ -61,8 +61,21 @@ exports.create = async (req, res, next) => {
   }
 }
 
+exports.checkForErrors = async (req, res, next) => {
+  const email = req.body.email
+
+  const user = await User.findOne({ email: email })
+
+  if (!user) {
+   return res
+      .status(400)
+      .json({ message: 'No account found with this e-mail address.' })
+  }
+  next()
+}
+
 exports.login = async (req, res) => {
-  console.log(console.log('Current user is:' + req.user))
+  console.log('controller')
   const token = signToken(req.user)
 
   const user = await User.findById(req.user._id)
@@ -70,7 +83,6 @@ exports.login = async (req, res) => {
   // const userWithPolemoveData = await User.findById(req.user._id).populate({
   //   path: 'polemoves.refId',
   // })
-
 
   const generalPolemoves = await Polemove.find()
 
@@ -89,8 +101,7 @@ exports.login = async (req, res) => {
     }
   })
 
-  console.log('confirm');
-
+  console.log('confirm')
 
   res.status(200).json({
     message: 'Login Successful',
@@ -110,12 +121,10 @@ exports.logout = (req, res) => {
   })
 }
 
-
-
-exports.changeStageName = async(req, res, next) => {
+exports.changeStageName = async (req, res, next) => {
   const newName = req.body.stageName
 
-  const existingName = await User.findOne({stageName: newName})
+  const existingName = await User.findOne({ stageName: newName })
 
   if (existingName) {
     return res.status(409).json({
@@ -123,12 +132,11 @@ exports.changeStageName = async(req, res, next) => {
     })
   }
 
-await User.findByIdAndUpdate(req.user._id, {stageName: newName})
+  await User.findByIdAndUpdate(req.user._id, { stageName: newName })
 
-res.status(200).json({
-  message: 'Stage name change successful'
-})
-
+  res.status(200).json({
+    message: 'Stage name change successful',
+  })
 }
 
 //Moves
@@ -225,7 +233,11 @@ exports.moveProgressChange = async (req, res, next) => {
       )
 
       if (mastered) {
-        helpers.createHistory(historyType, ObjectId(req.user._id), ObjectId(polemoveId))
+        helpers.createHistory(
+          historyType,
+          ObjectId(req.user._id),
+          ObjectId(polemoveId)
+        )
       }
 
       console.log(updatedUser.polemoves[index])
@@ -256,7 +268,11 @@ exports.moveProgressChange = async (req, res, next) => {
 
     //Creating history record
 
-    helpers.createHistory(historyType, ObjectId(req.user._id), ObjectId(polemoveId))
+    helpers.createHistory(
+      historyType,
+      ObjectId(req.user._id),
+      ObjectId(polemoveId)
+    )
 
     return res.status(200).json({
       message: 'Move added succesfully',
