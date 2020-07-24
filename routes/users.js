@@ -12,21 +12,6 @@ const passport = require('passport')
 router.put(
   '/create',
   [
-    body('stageName')
-      .not()
-      .isEmpty()
-      .withMessage("Don't forget to enter your stage name!")
-      .custom((value) => {
-        return User.findOne({
-          stageName: value,
-        }).then((userDoc) => {
-          if (userDoc) {
-            return Promise.reject(
-              'Sorry, that stagename is already taken. Please, choose another one.'
-            )
-          }
-        })
-      }),
     body('email')
       .normalizeEmail({ gmail_remove_dots: false })
       .isEmail()
@@ -37,6 +22,22 @@ router.put(
         }).then((userDoc) => {
           if (userDoc) {
             return Promise.reject('Email already exists. Please sign in.')
+          }
+        })
+      }),
+    body('stageName')
+      .not()
+      .isEmpty()
+      .withMessage("Don't forget to enter your stage name!")
+      .isLength({ min: 3 }).withMessage("Your stage name must be at least 3 characters long.")
+      .custom((value) => {
+        return User.findOne({
+          stageName: value,
+        }).then((userDoc) => {
+          if (userDoc) {
+            return Promise.reject(
+              'Sorry, that stagename is already taken. Please, choose another one.'
+            )
           }
         })
       }),
@@ -52,11 +53,9 @@ router.put(
 )
 
 router.post(
-  '/login', usersController.checkForErrors,
-    passport.authenticate(
-      'local', 
-      { session: false }
-    ),
+  '/login',
+  usersController.checkForErrors,
+  passport.authenticate('local', { session: false }),
   usersController.login
 )
 
