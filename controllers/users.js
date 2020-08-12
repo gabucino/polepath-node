@@ -4,6 +4,8 @@ const Media = require('../models/media')
 const History = require('../models/history')
 
 const ObjectId = require('mongodb').ObjectID
+const nodemailer = require('nodemailer')
+const sendgridTransport = require('nodemailer-sendgrid-transport')
 
 const jwt = require('jsonwebtoken')
 const { jsonSecret } = require('../config/keys')
@@ -13,6 +15,21 @@ const { validationResult } = require('express-validator')
 const bunnies = require('../util/bunny')
 const helpers = require('../util/helpers')
 const moment = require('moment')
+// const transporter = require('../util/helpers')
+
+const transporter = nodemailer.createTransport(
+  sendgridTransport({
+    auth: {
+      api_key:
+        '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',
+    },
+  })
+)
+
+const mail = `<h1>${this.subject}</h1>
+<div style="background-color:black">
+<p>Testing this out</p>
+</div>`
 
 // Auth
 signToken = (user) => {
@@ -53,6 +70,13 @@ exports.create = async (req, res, next) => {
     res
       .status(201)
       .json({ message: 'User created', token: token, user: createdUser })
+
+    // transporter.sendMail({
+    //   to: email,
+    //   from: 'welcome@polepath.com',
+    //   subject: 'Welcome to PolePath!',
+    //   html: mail,
+    // })
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500
@@ -67,7 +91,7 @@ exports.checkForErrors = async (req, res, next) => {
   const user = await User.findOne({ email: email })
 
   if (!user) {
-   return res
+    return res
       .status(400)
       .json({ message: 'No account found with this e-mail address.' })
   }
@@ -75,7 +99,6 @@ exports.checkForErrors = async (req, res, next) => {
 }
 
 exports.login = async (req, res) => {
-  console.log('controller')
   const token = signToken(req.user)
 
   const user = await User.findById(req.user._id)
@@ -101,7 +124,6 @@ exports.login = async (req, res) => {
     }
   })
 
-  console.log('confirm')
 
   res.status(200).json({
     message: 'Login Successful',
@@ -157,7 +179,6 @@ exports.moveProgressChange = async (req, res, next) => {
     const index = userCurrentMoves.findIndex(
       (polemove) => polemove.refId.toString() === polemoveId
     )
-    console.log(userCurrentMoves)
     if (
       (mastered === 'null' && index === -1) ||
       (userCurrentMoves[index] &&
