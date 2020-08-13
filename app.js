@@ -18,11 +18,8 @@ app.use(express.static(path.join(__dirname, 'build')));
 
 // app.use(cors())
 
-
-
-
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Origin', 'http://www.polepath.com')
   res.setHeader(
     'Access-Control-Allow-Methods',
     'OPTIONS, GET, POST, PUT, PATCH, DELETE'
