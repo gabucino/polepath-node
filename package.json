@@ -4,7 +4,7 @@
   "description": "The most amazing app for aerial nerds",
   "main": "app.js",
   "engines": {
-    "node": "10.20.1"
+    "node": "10.21.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
