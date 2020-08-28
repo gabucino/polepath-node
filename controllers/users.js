@@ -60,7 +60,7 @@ exports.create = async (req, res, next) => {
 
     const hashedPw = await bcrypt.hash(password, 12)
     const user = new User({
-      email: email,
+      email: email.toLowerCase(),
       stageName: stageName,
       password: hashedPw,
     })
@@ -88,7 +88,7 @@ exports.create = async (req, res, next) => {
 exports.checkForErrors = async (req, res, next) => {
   const email = req.body.email
 
-  const user = await User.findOne({ email: email })
+  const user = await User.findOne({ email: email.toLowerCase() })
 
   if (!user) {
     return res
