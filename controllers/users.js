@@ -287,12 +287,19 @@ exports.moveProgressChange = async (req, res, next) => {
         { new: true }
       )
 
-      if (mastered) {
         helpers.createHistory(
           historyType,
           ObjectId(req.user._id),
           ObjectId(polemoveId)
         )
+
+
+      if (mastered == false) {
+        await History.deleteMany({
+          userRef: ObjectId(req.user._id),
+          polemoveRef: ObjectId(polemoveId),
+          type: 'mastered'
+        })
       }
 
       console.log(updatedUser.polemoves[index])
