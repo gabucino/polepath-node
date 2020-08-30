@@ -12,7 +12,7 @@ const { jsonSecret } = require('../config/keys')
 const bcrypt = require('bcrypt')
 const { validationResult } = require('express-validator')
 
-const bunnies = require('../util/bunny')
+const bunny = require('../util/bunny')
 const helpers = require('../util/helpers')
 const moment = require('moment')
 // const transporter = require('../util/helpers')
@@ -124,14 +124,13 @@ exports.login = async (req, res) => {
     }
   })
 
-
   res.status(200).json({
     message: 'Login Successful',
     token: token,
     role: user.role,
     stageName: user.stageName,
     email: user.email,
-    photoURL: user.photoURL,
+    photoURL: user.profilePic ? `https://polepath.b-cdn.net/users/${user._id}/profilepics/${user.profilePic}` : '',
     polemoves: newPolemoves,
   })
 }
@@ -161,6 +160,41 @@ exports.changeStageName = async (req, res, next) => {
   })
 }
 
+exports.changeAvatar = async (req, res, next) => {
+  try {
+    console.log(req.file)
+    const profilePic = req.file
+    const extension = profilePic.mimetype.split('/').pop()
+    console.log('FILENAME: ', profilePic.filename)
+    if (!profilePic) {
+      return res.status(422).json('Attached file is not an image.')
+    }
+
+    const timestamp = Date.now()
+
+    await User.findByIdAndUpdate(req.user._id, {
+      profilePic: `${timestamp}.${extension}`,
+    })
+
+    const bunnyData = {
+      fsFileName: profilePic.filename,
+      bunnyFileName: `${timestamp}.${extension}`,
+      path: `users/${req.user._id}/profilepics`,
+    }
+
+    await bunny.upload(bunnyData)
+
+    return res.status(200).json({
+      message: 'Your Profile Picture has been changed. Fab!',
+      photoURL: `https://polepath.b-cdn.net/users/${req.user._id}/profilepics/${timestamp}.${extension}`
+    })
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+    next(err)
+  }
+}
 //Moves
 
 exports.moveProgressChange = async (req, res, next) => {
@@ -213,7 +247,7 @@ exports.moveProgressChange = async (req, res, next) => {
       })
 
       mediaFiles.forEach((file) =>
-        bunnies.delete({
+        bunny.delete({
           polemoveId: polemoveId,
           userId: req.user._id,
           filename: `${file._id}.${file.extension}`,

@@ -23,7 +23,7 @@ const userSchema = new Schema(
       type: String,
       default: 'user',
     },
-    photoURL: {
+    profilePic: {
       type: String,
     },
     polemoves: [

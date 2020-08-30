@@ -4,7 +4,7 @@ const User = require('../models/users')
 const Media = require('../models/media')
 const History = require('../models/history')
 
-const bunnies = require('../util/bunny')
+const bunny = require('../util/bunny')
 const helpers = require('../util/helpers')
 
 const moment = require('moment')
@@ -59,12 +59,12 @@ exports.addProgressPhoto = async (req, res, next) => {
       path: `users/${req.user._id}/${polemoveId}`,
     }
 
-    await bunnies.upload(bunnyData)
+    await bunny.upload(bunnyData)
 
     //Public DB uload
-    if (privacy === 'public') {
-      const publicPolemove = await Polemove.findById(polemoveId)
-    }
+    // if (privacy === 'public') {
+    //   const publicPolemove = await Polemove.findById(polemoveId)
+    // }
     //Response
 
     const userPhotos = await Media.find({
@@ -116,7 +116,7 @@ exports.delete = async (req, res, next) => {
       filename: `${photoId}.${photo.extension}`,
     }
 
-    await bunnies.delete(bunnyData)
+    await bunny.delete(bunnyData)
 
     await Media.findByIdAndDelete(photoId)
 

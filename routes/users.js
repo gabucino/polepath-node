@@ -89,7 +89,15 @@ router.post(
   usersController.changeStageName
 )
 
-//Any protected page example
+router.post(
+  '/changeavatar',
+  passport.authenticate('jwt', {
+    session: false,
+  }),
+  upload.single('image'),
+  usersController.changeAvatar
+)
+
 
 router.post(
   '/polemoves/addmovetouser',
