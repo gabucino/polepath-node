@@ -2791,3 +2791,13 @@
 [0mGET /api/users/history [32m200[0m 1133.214 ms - 541[0m
 [0mOPTIONS /api/users/changeavatar [32m200[0m 4.338 ms - 4[0m
 [0mPOST /api/users/changeavatar [32m200[0m 1207.446 ms - 158[0m
+[0mOPTIONS /api/users/login [32m200[0m 4.342 ms - 4[0m
+[0mPOST /api/users/login [33m400[0m 354.589 ms - 56[0m
+[0mOPTIONS /api/users/login [32m200[0m 0.275 ms - 4[0m
+[0mPOST /api/users/login [33m400[0m 313.614 ms - 56[0m
+[0mOPTIONS /api/users/login [32m200[0m 0.263 ms - 4[0m
+[0mPOST /api/users/login [33m400[0m 340.266 ms - 56[0m
+[0mOPTIONS /api/users/login [32m200[0m 0.359 ms - 4[0m
+[0mPOST /api/users/login [33m400[0m 313.935 ms - 56[0m
+[0mOPTIONS /api/users/login [32m200[0m 0.500 ms - 4[0m
+[0mPOST /api/users/login [33m400[0m 341.726 ms - 56[0m
