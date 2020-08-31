@@ -19,6 +19,7 @@ exports.addProgressPhoto = async (req, res, next) => {
     const category = req.body.category
 
     const image = req.file
+    console.log('IMAGE: ', image);
     const extension = image.mimetype.split('/').pop()
 
     if (!image) {
