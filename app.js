@@ -33,7 +33,7 @@ app.use((req, res, next) => {
 const usersRoutes = require('./routes/users')
 const polemovesRoutes = require('./routes/polemoves')
 const mediaRoutes = require('./routes/media')
-
+const authRoutes = require('./routes/auth')
 
 // const privateKey = fs.readFileSync('server.key')
 // const certificate = fs.readFileSync('server.cert')
@@ -86,6 +86,7 @@ const accessLogStream = fs.createWriteStream(
 app.use(morgan('dev', { stream: accessLogStream }))
 
 //Register routes
+app.use('/api/auth', authRoutes)
 app.use('/api/users', usersRoutes)
 app.use('/api/moves', polemovesRoutes)
 app.use('/api/media', mediaRoutes)
