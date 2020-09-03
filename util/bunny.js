@@ -21,6 +21,8 @@ exports.upload = async (data) => {
   try {
     const pic = fs.readFileSync(`./images/${data.fsFileName}`, '')
 
+    // const pic = fs.readFileSync(data.file)
+
     const response = await axios.put(
       `https://storage.bunnycdn.com/polepath/${data.path}/${data.bunnyFileName}`,
       pic,
@@ -34,11 +36,8 @@ exports.upload = async (data) => {
 
     if (response.status === 201) {
       console.log(response.data)
-      fs.unlinkSync(`./images/${data.fsFileName}`)
     } else {
-      const error = new Error(
-        "Bunny upload failed :("
-      )
+      const error = new Error('Bunny upload failed :(')
       error.statusCode = 401
       throw error
     }

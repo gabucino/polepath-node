@@ -15,6 +15,7 @@ const { validationResult } = require('express-validator')
 const bunny = require('../util/bunny')
 const helpers = require('../util/helpers')
 const moment = require('moment')
+const fs = require('fs');
 
 
 exports.changeStageName = async (req, res, next) => {
@@ -51,17 +52,26 @@ exports.changeAvatar = async (req, res, next) => {
       profilePic: `${timestamp}.${extension}`,
     })
 
+    // let pic;
+
+    // let pic = fs.readFileSync(profilePic);
+
+
+    // const pic = new File([myBlob], `${timestamp}.${extension}`,  { type: profilePic.mimetype, });
+
+
     const bunnyData = {
       fsFileName: profilePic.filename,
       bunnyFileName: `${timestamp}.${extension}`,
       path: `users/${req.user._id}/profilepics`,
+      // pic: pic
     }
 
     await bunny.upload(bunnyData)
 
     return res.status(200).json({
       message: 'Your Profile Picture has been changed. Fab!',
-      photoURL: `https://polepath.b-cdn.net/users/${req.user._id}/profilepics/${timestamp}.${extension}`
+      photoURL: `https://polepath.b-cdn.net/users/${req.user._id}/profilepics/${timestamp}.${extension}`,
     })
   } catch (err) {
     if (!err.statusCode) {
@@ -162,18 +172,17 @@ exports.moveProgressChange = async (req, res, next) => {
         { new: true }
       )
 
-        helpers.createHistory(
-          historyType,
-          ObjectId(req.user._id),
-          ObjectId(polemoveId)
-        )
-
+      helpers.createHistory(
+        historyType,
+        ObjectId(req.user._id),
+        ObjectId(polemoveId)
+      )
 
       if (mastered == false) {
         await History.deleteMany({
           userRef: ObjectId(req.user._id),
           polemoveRef: ObjectId(polemoveId),
-          type: 'mastered'
+          type: 'mastered',
         })
       }
 
