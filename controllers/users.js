@@ -3,6 +3,8 @@ const Polemove = require('../models/polemoves')
 const Media = require('../models/media')
 const History = require('../models/history')
 
+const progressService = require('../services/progress')
+
 const ObjectId = require('mongodb').ObjectID
 const nodemailer = require('nodemailer')
 const sendgridTransport = require('nodemailer-sendgrid-transport')
@@ -15,8 +17,7 @@ const { validationResult } = require('express-validator')
 const bunny = require('../util/bunny')
 const helpers = require('../util/helpers')
 const moment = require('moment')
-const fs = require('fs');
-
+const fs = require('fs')
 
 exports.changeStageName = async (req, res, next) => {
   const newName = req.body.stageName
@@ -56,9 +57,7 @@ exports.changeAvatar = async (req, res, next) => {
 
     // let pic = fs.readFileSync(profilePic);
 
-
     // const pic = new File([myBlob], `${timestamp}.${extension}`,  { type: profilePic.mimetype, });
-
 
     const bunnyData = {
       fsFileName: profilePic.filename,
@@ -81,6 +80,108 @@ exports.changeAvatar = async (req, res, next) => {
   }
 }
 //Moves
+
+//Progress handling controllers
+exports.startProgress = async (req, res, next) => {
+  console.log('STARTING PROGRESS')
+  try {
+    const user = await User.findById(req.user._id)
+
+    const newMove = {
+      refId: req.body.polemoveId,
+      mastered: req.body.mastered,
+    }
+
+    user.polemoves.push(newMove)
+    const updatedUser = await user.save()
+
+    // const historyType = req.body.mastered ? 'mastered' : 'started'
+    // helpers.createHistory(
+    //   historyType,
+    //   ObjectId(req.user._id),
+    //   ObjectId(polemoveId)
+    // )
+
+    return res.status(200).json({
+      message: 'Move added succesfully',
+      updatedMove: updatedUser.polemoves[updatedUser.polemoves.length - 1],
+    })
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+  }
+}
+
+exports.updateProgress = async (req, res, next) => {
+  const updatedUser = await User.findOneAndUpdate(
+    { _id: req.user._id, 'polemoves.refId': req.body.polemoveId },
+    {
+      $set: {
+        polemoves: {
+          refId: req.body.polemoveId,
+          mastered: req.body.mastered,
+        },
+      },
+    },
+    { new: true }
+  )
+
+  const updatedMove = updatedUser.polemoves.find(
+    (move) => move.refId.toString() === req.body.polemoveId.toString()
+  )
+
+  console.log('UPDATEDMOVE', updatedMove)
+
+  return res.status(200).json({
+    message: `Mastered is now ${updatedMove.mastered}`,
+    updatedMove: updatedMove,
+  })
+}
+
+exports.resetProgress = async (req, res, next) => {
+  console.log('Reaching the reset controller.');
+  console.log(`Supposed to update ${req.user._id}: should remove ${req.body.polemoveId}`);
+  const updatedUser = await User.findByIdAndUpdate(req.user._id, {
+    $pull: {
+      polemoves: {
+        refId: req.body.polemoveId,
+      },
+    },
+  })
+  console.log(req.body.polemoveId === updatedUser._id)
+
+  const mediaFiles = await Media.find({
+    userRef: req.user._id,
+    polemoveRef: req.body.polemoveId,
+  })
+
+  //Removing file from bunny
+  mediaFiles.forEach((file) =>
+    bunny.delete({
+      polemoveId: polemoveId,
+      userId: req.user._id,
+      filename: `${file._id}.${file.extension}`,
+    })
+  )
+  //removing media&history records
+  await Media.deleteMany({
+    userRef: ObjectId(req.user._id),
+    polemoveRef: ObjectId(req.body.polemoveId),
+  })
+
+  await History.deleteMany({
+    userRef: ObjectId(req.user._id),
+    polemoveRef: ObjectId(req.body.polemoveId),
+  })
+
+  const polemove = await Polemove.findById(ObjectId(req.body.polemoveId))
+
+  return res.status(200).json({
+    message: 'Move removed from user',
+    polemove: polemove,
+  })
+}
 
 exports.moveProgressChange = async (req, res, next) => {
   try {

@@ -22,6 +22,30 @@ router.post(
   usersController.changeAvatar
 )
 
+//Progress handling routes
+router.post(
+  '/polemoves/startprogress',
+  passport.authenticate('jwt', {
+    session: false,
+  }),
+  usersController.startProgress
+)
+
+router.post(
+  '/polemoves/updateprogress',
+  passport.authenticate('jwt', {
+    session: false,
+  }),
+  usersController.updateProgress
+)
+
+router.post(
+  '/polemoves/resetprogress',
+  passport.authenticate('jwt', {
+    session: false,
+  }),
+  usersController.resetProgress
+)
 
 router.post(
   '/polemoves/addmovetouser',

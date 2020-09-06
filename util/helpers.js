@@ -15,6 +15,8 @@ exports.createHistory = async (type, userId, polemoveId, itemRef) => {
       })
   
       await historyItem.save()
+      console.log('DO i get here?');
+
 }
 
 //Email transporter setup

@@ -42,6 +42,8 @@ const userSchema = new Schema(
         photos: [{ type: Schema.Types.ObjectId, ref: 'Media' }],
       },
     ],
+    trainingPlan: [{ type: Schema.Types.ObjectId, ref: 'Polemove' }],
+
   },
   { timestamps: true }
 )
