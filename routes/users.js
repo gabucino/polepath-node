@@ -48,14 +48,6 @@ router.post(
 )
 
 router.post(
-  '/polemoves/addmovetouser',
-  passport.authenticate('jwt', {
-    session: false,
-  }),
-  usersController.moveProgressChange
-)
-
-router.post(
   '/polemoves/addnotes',
   passport.authenticate('jwt', {
     session: false,
@@ -84,13 +76,5 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   usersController.getHistory
 )
-
-// router.get(
-//   '/polemoves/getprogressphotos',
-//   passport.authenticate('jwt', {
-//     session: false,
-//   }),
-//   usersController.getProgressPhotos
-// )
 
 module.exports = router

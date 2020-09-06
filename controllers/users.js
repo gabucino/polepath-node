@@ -83,8 +83,8 @@ exports.changeAvatar = async (req, res, next) => {
 
 //Progress handling controllers
 exports.startProgress = async (req, res, next) => {
-  console.log('STARTING PROGRESS')
   try {
+    console.log('starting progress');
     const user = await User.findById(req.user._id)
 
     const newMove = {
@@ -95,12 +95,13 @@ exports.startProgress = async (req, res, next) => {
     user.polemoves.push(newMove)
     const updatedUser = await user.save()
 
-    // const historyType = req.body.mastered ? 'mastered' : 'started'
-    // helpers.createHistory(
-    //   historyType,
-    //   ObjectId(req.user._id),
-    //   ObjectId(polemoveId)
-    // )
+    const historyType = req.body.mastered ? 'mastered' : 'started'
+
+    helpers.createHistory(
+      historyType,
+      ObjectId(req.user._id),
+      ObjectId(req.body.polemoveId)
+    )
 
     return res.status(200).json({
       message: 'Move added succesfully',
@@ -131,7 +132,23 @@ exports.updateProgress = async (req, res, next) => {
     (move) => move.refId.toString() === req.body.polemoveId.toString()
   )
 
-  console.log('UPDATEDMOVE', updatedMove)
+  const historyType = req.body.mastered ? 'mastered' : 'started'
+
+  helpers.createHistory(
+    historyType,
+    ObjectId(req.user._id),
+    ObjectId(req.body.polemoveId)
+  )
+
+  if (!req.body.mastered) {
+    //deleting mastered record on setting back
+
+   await History.deleteMany({
+      userRef: ObjectId(req.user._id),
+      polemoveRef: ObjectId(req.body.polemoveId),
+      type: 'mastered',
+    })
+  }
 
   return res.status(200).json({
     message: `Mastered is now ${updatedMove.mastered}`,
@@ -140,8 +157,6 @@ exports.updateProgress = async (req, res, next) => {
 }
 
 exports.resetProgress = async (req, res, next) => {
-  console.log('Reaching the reset controller.');
-  console.log(`Supposed to update ${req.user._id}: should remove ${req.body.polemoveId}`);
   const updatedUser = await User.findByIdAndUpdate(req.user._id, {
     $pull: {
       polemoves: {
@@ -159,7 +174,7 @@ exports.resetProgress = async (req, res, next) => {
   //Removing file from bunny
   mediaFiles.forEach((file) =>
     bunny.delete({
-      polemoveId: polemoveId,
+      polemoveId: req.body.polemoveId,
       userId: req.user._id,
       filename: `${file._id}.${file.extension}`,
     })
@@ -183,155 +198,6 @@ exports.resetProgress = async (req, res, next) => {
   })
 }
 
-exports.moveProgressChange = async (req, res, next) => {
-  try {
-    const userId = req.user
-    const polemoveId = req.body.polemoveId
-    const mastered = req.body.mastered
-
-    const historyType = mastered ? 'mastered' : 'started'
-    const polemove = await Polemove.find({ _id: polemoveId })
-
-    const user = await User.findById(userId)
-    const userCurrentMoves = user.polemoves
-
-    //Index will be -1 if no match found or array length is 0
-    const index = userCurrentMoves.findIndex(
-      (polemove) => polemove.refId.toString() === polemoveId
-    )
-    if (
-      (mastered === 'null' && index === -1) ||
-      (userCurrentMoves[index] &&
-        mastered == userCurrentMoves[index].mastered.toString())
-    ) {
-      console.log('NO CHANGES CODE RAN')
-      return res.status(200).json({
-        message: 'No changes added',
-      })
-    }
-    //removing move from user
-    if (mastered === null) {
-      console.log('DELETION CODE RAN')
-
-      const updatedUser = await User.updateOne(
-        { _id: userId },
-        {
-          $pull: {
-            polemoves: {
-              refId: polemoveId,
-            },
-          },
-        }
-      )
-      console.log('Move succesfully removed from user')
-
-      //removing mediafiles from bunny
-
-      const mediaFiles = await Media.find({
-        userRef: req.user._id,
-        polemoveRef: polemoveId,
-      })
-
-      mediaFiles.forEach((file) =>
-        bunny.delete({
-          polemoveId: polemoveId,
-          userId: req.user._id,
-          filename: `${file._id}.${file.extension}`,
-        })
-      )
-
-      //removing media&history records
-      await Media.deleteMany({
-        userRef: ObjectId(req.user._id),
-        polemoveRef: ObjectId(polemoveId),
-      })
-      await History.deleteMany({
-        userRef: ObjectId(req.user._id),
-        polemoveRef: ObjectId(polemoveId),
-      })
-
-      return res.status(200).json({
-        message: 'Move removed from user',
-        user: user,
-      })
-    }
-
-    //Update existing value
-    if (index !== -1) {
-      console.log('UPDATE CODE RAN')
-
-      const updatedUser = await User.findOneAndUpdate(
-        { _id: userId, 'polemoves.refId': polemoveId },
-        {
-          $set: {
-            polemoves: {
-              refId: polemoveId,
-              mastered: mastered,
-            },
-          },
-        },
-        { new: true }
-      )
-
-      helpers.createHistory(
-        historyType,
-        ObjectId(req.user._id),
-        ObjectId(polemoveId)
-      )
-
-      if (mastered == false) {
-        await History.deleteMany({
-          userRef: ObjectId(req.user._id),
-          polemoveRef: ObjectId(polemoveId),
-          type: 'mastered',
-        })
-      }
-
-      console.log(updatedUser.polemoves[index])
-      return res.status(200).json({
-        message: 'Move status changed',
-        userMoveData: updatedUser.polemoves[index],
-      })
-    }
-
-    //adding new move to user
-    console.log('CREATE CODE RAN')
-
-    const addedMove = {
-      refId: polemoveId,
-      mastered: mastered,
-    }
-
-    user.polemoves.push(addedMove)
-    const updatedUser = await user.save()
-
-    // const userWithPolemoveData = await User.findById(userId).populate({
-    //   path: 'polemoves.refId',
-    // })
-
-    const newIndex = updatedUser.polemoves.findIndex(
-      (polemove) => polemove.refId.toString() === polemoveId
-    )
-
-    //Creating history record
-
-    helpers.createHistory(
-      historyType,
-      ObjectId(req.user._id),
-      ObjectId(polemoveId)
-    )
-
-    return res.status(200).json({
-      message: 'Move added succesfully',
-      userMoveData: updatedUser.polemoves[newIndex],
-    })
-  } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500
-    }
-    next(err)
-  }
-}
 
 exports.addNote = async (req, res, next) => {
   try {
