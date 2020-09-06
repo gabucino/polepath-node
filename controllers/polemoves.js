@@ -15,13 +15,13 @@ exports.create = async (req, res, next) => {
     const description = req.body.description
     let extension = null
 
-    console.log('First othernames',otherNames)
+    console.log('First othernames', otherNames)
 
     if (mainPhoto) {
       extension = mainPhoto.mimetype.split('/').pop()
     }
 
-    if (otherNames !== "undefined") {
+    if (otherNames !== 'undefined') {
       if (otherNames.includes(',')) {
         otherNames = otherNames.split(',')
       } else {
@@ -31,12 +31,11 @@ exports.create = async (req, res, next) => {
       otherNames = []
     }
 
-
     const newMove = new Polemove({
       name: name,
       otherNames: otherNames,
       level: level,
-      description: description === "undefined" ? '' : description,
+      description: description === 'undefined' ? '' : description,
       extension: extension,
     })
 
@@ -88,7 +87,7 @@ exports.viewAll = async (req, res, next) => {
             ...el.toObject(),
             photoURL: el.extension
               ? `https://polepath.b-cdn.net/mainphotos/${el._id}.${el.extension}`
-              : null
+              : null,
           },
         }
       } else {
@@ -97,13 +96,13 @@ exports.viewAll = async (req, res, next) => {
             ...el.toObject(),
             photoURL: el.extension
               ? `https://polepath.b-cdn.net/mainphotos/${el._id}.${el.extension}`
-              : null
+              : null,
           },
         }
       }
     })
 
-    console.log('the result is:::', newPolemoves);
+    console.log('the result is:::', newPolemoves)
     res
       .status(200)
       .json({ message: 'Moves fetched succesfully', polemoves: newPolemoves })
@@ -117,28 +116,18 @@ exports.viewAll = async (req, res, next) => {
 
 exports.view = async (req, res, next) => {
   try {
+    console.log('enter');
     //TODO: make sure to get user id too
     const polemoveId = req.params.polemoveId
     const isValid = ObjectId.isValid(polemoveId)
     if (!isValid) {
       const error = new Error('Move id invalid')
-      error.statusCode = 404
+      error.statusCode = 411
       throw error
     }
 
     //I need to return two things: user related data, and general polemovedata
     const user = await User.findById(req.user._id)
-
-    const foundMove = user.polemoves.find(
-      (move) => move.refId.toString() === polemoveId
-    )
-
-    const photos = await Media.find({
-      polemoveRef: ObjectId(polemoveId),
-      userRef: ObjectId(req.user._id),
-    })
-
-    console.log(photos)
 
     const polemove = await Polemove.findById(polemoveId)
     if (!polemove) {
@@ -146,6 +135,22 @@ exports.view = async (req, res, next) => {
       error.statusCode = 422
       throw error
     }
+
+    const foundMove = user.polemoves.find(
+      (move) => move.refId.toString() === polemoveId
+    )
+
+    if (polemove && !foundMove) {
+      return res.status(200).json({
+        message: 'Move fetched, no user data found.',
+        polemove: polemove,
+      })
+    }
+
+    const photos = await Media.find({
+      polemoveRef: ObjectId(polemoveId),
+      userRef: ObjectId(req.user._id),
+    })
 
     // const bunnyData = {
     //   path: `users/${req.user._id}/${polemoveId}/progressphotos`,
@@ -162,14 +167,15 @@ exports.view = async (req, res, next) => {
       }
     }
 
+    const polemoveWithUserdata = {
+      ...foundMove.toObject(),
+      photos: newPhotos,
+      ...polemove.toObject(),
+    }
+
     return res.status(200).json({
-      userMoveData: foundMove
-        ? {
-            ...foundMove.toObject(),
-            photos: newPhotos,
-          }
-        : null,
-      generalData: polemove,
+      message: 'Move with userdata fetched successfully.',
+      polemove: polemoveWithUserdata,
     })
   } catch (err) {
     if (!err.statusCode) {

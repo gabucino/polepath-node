@@ -96,6 +96,7 @@ app.use(compression())
 
 
 app.get('/*', (req, res) => {
+  console.log('ide mar nem kene');
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
