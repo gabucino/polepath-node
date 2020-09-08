@@ -18,7 +18,6 @@ exports.addProgressPhoto = async (req, res, next) => {
     const category = req.body.category
 
     const image = req.file
-    console.log('IMAGE: ', image);
     const extension = image.mimetype.split('/').pop()
 
     if (!image) {
@@ -40,6 +39,12 @@ exports.addProgressPhoto = async (req, res, next) => {
 
     const createdMedia = await photo.save()
 
+    const newPhoto = {
+      _id: createdMedia._id,
+      date: moment(createdMedia.date.getTime()).format('D MMMM YYYY'),
+      path:`https://polepath.b-cdn.net/users/${req.user._id}/${polemoveId}/${createdMedia._id}.${createdMedia.extension}`
+    }
+
     const polemove = user.polemoves.find(
       (el) => el.refId.toString() === polemoveId.toString()
     )
@@ -60,6 +65,7 @@ exports.addProgressPhoto = async (req, res, next) => {
     }
 
     await bunny.upload(bunnyData)
+    console.log('Bunny upload done');
 
     //Public DB uload
     // if (privacy === 'public') {
@@ -71,17 +77,13 @@ exports.addProgressPhoto = async (req, res, next) => {
       polemoveRef: polemoveId,
       userRef: req.user._id,
     })
-    const newPhotos = userPhotos.map((el) => ({
-      _id: el._id,
-      date: moment(el.date.getTime()).format('D MMMM YYYY'),
-      path: `https://polepath.b-cdn.net/users/${req.user._id}/${polemoveId}/${el._id}.${el.extension}`,
-    }))
+
 
     helpers.createHistory('photo', ObjectId(req.user._id), ObjectId(polemoveId), ObjectId(photo._id))
 
     return res.status(200).json({
       message: 'Photo uploaded',
-      photos: newPhotos,
+      newPhoto: newPhoto,
     })
   } catch (err) {
     if (!err.statusCode) {
@@ -146,7 +148,6 @@ exports.delete = async (req, res, next) => {
 
     return res.status(200).json({
       message: 'Photo deleted',
-      photos: newPhotos,
     })
   } catch (err) {
     if (!err.statusCode) {

@@ -19,7 +19,6 @@ passport.use(
     },
     async (payload, done) => {
       try {
-        console.log('this code should definitely run');
         //Find the user from token
         const user = await User.findById(payload.sub)
         if (!user) {

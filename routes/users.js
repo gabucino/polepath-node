@@ -63,14 +63,6 @@ router.post(
   usersController.deleteNote
 )
 
-router.post(
-  '/polemoves/deletenote',
-  passport.authenticate('jwt', {
-    session: false,
-  }),
-  usersController.deleteNote
-)
-
 router.get(
   '/history',
   passport.authenticate('jwt', { session: false }),

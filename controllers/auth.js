@@ -110,14 +110,13 @@ exports.login = async (req, res) => {
 
     if (currentMove) {
       return {
-        ...currentMove.toObject(),
+        mastered: currentMove.toObject().mastered,
         ...el.toObject(),
       }
     }
     return el.toObject()
   })
 
-  // console.log(polemoveWithUserdata)
 
   res.status(200).json({
     message: 'Login Successful',

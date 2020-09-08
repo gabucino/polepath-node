@@ -4,14 +4,6 @@ const passport = require('passport')
 const { upload } = require('../config/multer')
 const mediaController = require('../controllers/media')
 
-router.delete(
-  '/delete/:id',
-  passport.authenticate('jwt', {
-    session: false,
-  }),
-  mediaController.delete
-)
-
 router.post(
   '/addprogressphoto',
   passport.authenticate('jwt', {
@@ -20,5 +12,15 @@ router.post(
   upload.single('image'),
   mediaController.addProgressPhoto
 )
+
+router.delete(
+  '/delete/:id',
+  passport.authenticate('jwt', {
+    session: false,
+  }),
+  mediaController.delete
+)
+
+
 
 module.exports = router

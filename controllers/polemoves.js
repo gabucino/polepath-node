@@ -15,7 +15,6 @@ exports.create = async (req, res, next) => {
     const description = req.body.description
     let extension = null
 
-    console.log('First othernames', otherNames)
 
     if (mainPhoto) {
       extension = mainPhoto.mimetype.split('/').pop()
@@ -102,7 +101,6 @@ exports.viewAll = async (req, res, next) => {
       }
     })
 
-    console.log('the result is:::', newPolemoves)
     res
       .status(200)
       .json({ message: 'Moves fetched succesfully', polemoves: newPolemoves })
@@ -116,7 +114,6 @@ exports.viewAll = async (req, res, next) => {
 
 exports.view = async (req, res, next) => {
   try {
-    console.log('enter');
     //TODO: make sure to get user id too
     const polemoveId = req.params.polemoveId
     const isValid = ObjectId.isValid(polemoveId)

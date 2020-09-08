@@ -39,10 +39,8 @@ exports.changeStageName = async (req, res, next) => {
 
 exports.changeAvatar = async (req, res, next) => {
   try {
-    console.log(req.file)
     const profilePic = req.file
     const extension = profilePic.mimetype.split('/').pop()
-    console.log('FILENAME: ', profilePic.filename)
     if (!profilePic) {
       return res.status(422).json('Attached file is not an image.')
     }
@@ -84,7 +82,6 @@ exports.changeAvatar = async (req, res, next) => {
 //Progress handling controllers
 exports.startProgress = async (req, res, next) => {
   try {
-    console.log('starting progress');
     const user = await User.findById(req.user._id)
 
     const newMove = {
@@ -164,7 +161,6 @@ exports.resetProgress = async (req, res, next) => {
       },
     },
   })
-  console.log(req.body.polemoveId === updatedUser._id)
 
   const mediaFiles = await Media.find({
     userRef: req.user._id,
@@ -221,7 +217,7 @@ exports.addNote = async (req, res, next) => {
     await user.save()
     return res.status(200).json({
       message: 'Note added',
-      updatedUserMoveData: foundMove.notes,
+      note: foundMove.notes[foundMove.notes.length - 1],
     })
   } catch (err) {
     if (!err.statusCode) {
@@ -238,15 +234,12 @@ exports.deleteNote = async (req, res, next) => {
 
   //finding that note arr
   const user = await User.findById(userId)
-  console.log('USER FOUND:', user.polemoves)
 
   const polemove = user.polemoves.find(
     (el) => el.refId.toString() === polemoveId.toString()
   )
-  console.log('I GOT THIS FAR:', polemove)
 
   const notes = polemove.notes
-  console.log('NOTES:', notes)
   const noteIndex = notes.findIndex(
     (el) => el._id.toString() === noteId.toString()
   )
@@ -263,7 +256,6 @@ exports.deleteNote = async (req, res, next) => {
 
   return res.status(200).json({
     message: 'boring response',
-    notes: foundMove.notes,
   })
 }
 
@@ -292,7 +284,6 @@ exports.getHistory = async (req, res, next) => {
     }
 
     const modifiedHistory = await getData()
-    console.log(modifiedHistory)
 
     return res.status(200).json({
       message: 'History retrieved',
