@@ -15,7 +15,6 @@ exports.create = async (req, res, next) => {
     const description = req.body.description
     let extension = null
 
-
     if (mainPhoto) {
       extension = mainPhoto.mimetype.split('/').pop()
     }
@@ -180,4 +179,10 @@ exports.view = async (req, res, next) => {
     }
     next(err)
   }
+}
+
+exports.extra = async (req, res, next) => {
+  const user = await User.findById(req.user._id)
+
+
 }

@@ -2,7 +2,6 @@ const router = require('express').Router()
 const passport = require('passport')
 const { upload } = require('../config/multer')
 
-
 const polemovesController = require('../controllers/polemoves')
 
 router.put(
@@ -28,6 +27,13 @@ router.get(
     session: false,
   }),
   polemovesController.view
+)
+
+//Get extra data (eg. photos/notes etc)
+router.get(
+  '/polemoves/extra/:polemoveId',
+  passport.authenticate('jwt', { session: false }),
+  polemovesController.extra
 )
 
 module.exports = router

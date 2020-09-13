@@ -22,6 +22,8 @@ router.post(
   usersController.changeAvatar
 )
 
+
+
 //Progress handling routes
 router.post(
   '/polemoves/startprogress',

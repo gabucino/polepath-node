@@ -46,9 +46,12 @@ exports.addProgressPhoto = async (req, res, next) => {
     }
 
     const polemove = user.polemoves.find(
-      (el) => el.refId.toString() === polemoveId.toString()
+      el => {
+        console.log(el.refId.toString() === polemoveId.toString());
+      return  el.refId.toString() === polemoveId.toString()}
     )
 
+    console.log(polemove);
     polemove.photos.push(createdMedia)
 
     await user.save()
@@ -96,6 +99,7 @@ exports.addProgressPhoto = async (req, res, next) => {
 
 exports.delete = async (req, res, next) => {
   try {
+    console.log('deleting shit even though i shouldnt?????????')
     const photoId = req.params.id
     const userId = req.user._id
 

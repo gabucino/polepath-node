@@ -26,22 +26,7 @@ const userSchema = new Schema(
     profilePic: {
       type: String,
     },
-    polemoves: [
-      {
-        refId: {
-          type: Schema.Types.ObjectId,
-          ref: 'Polemove',
-        },
-        mastered: {
-          type: Boolean,
-          default: false,
-        },
-        notes: [
-          { text: String, timestamp: { type: Date, default: Date.now() } },
-        ],
-        photos: [{ type: Schema.Types.ObjectId, ref: 'Media' }],
-      },
-    ],
+    polemoves: [{ type: Schema.Types.ObjectId, ref: 'MoveProgress' }],
     trainingPlan: [{ type: Schema.Types.ObjectId, ref: 'Polemove' }],
 
   },

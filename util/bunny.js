@@ -36,6 +36,10 @@ exports.upload = async (data) => {
 
     if (response.status === 201) {
       console.log(response.data)
+      fs.unlink(`./images/${data.fsFileName}`, ((error) => {
+        if (error) console.log(error)
+      }))
+
     } else {
       const error = new Error('Bunny upload failed :(')
       error.statusCode = 401
@@ -62,10 +66,26 @@ exports.getAll = async (data) => {
   }
 }
 
+exports.deleteFolder = async (userId, polemoveId ) => {
+  try {
+    console.log(userId, polemoveId)
+    const response = await axios.delete(
+      `https://storage.bunnycdn.com/polepath/users/${userId}/${polemoveId}`,
+      {
+        headers: {
+          AccessKey: process.env.BUNNY_STORAGE_API_KEY,
+        },
+      }
+    )
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 exports.delete = async ({ polemoveId, userId, filename }) => {
   try {
     const response = await axios.delete(
-      `https://storage.bunnycdn.com/polepath/users/${userId}/${polemoveId}/${filename}`,
+      `https://storage.bunnycdn.com/polepath/users/${userId}/${polemoveId}/${filename}/`,
       {
         headers: {
           AccessKey: process.env.BUNNY_STORAGE_API_KEY,

@@ -7,6 +7,7 @@ const History = require('../models/history')
 const ObjectId = require('mongodb').ObjectID
 
 exports.createHistory = async (type, userId, polemoveId, itemRef) => {
+  console.log('CREATING HISTORY ITEM')
     const historyItem = new History({
         type: type,
         userRef: userId,

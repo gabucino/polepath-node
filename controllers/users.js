@@ -2,6 +2,7 @@ const User = require('../models/users')
 const Polemove = require('../models/polemoves')
 const Media = require('../models/media')
 const History = require('../models/history')
+const MoveProgress = require('../models/moveProgress')
 
 const progressService = require('../services/progress')
 
@@ -140,7 +141,7 @@ exports.updateProgress = async (req, res, next) => {
   if (!req.body.mastered) {
     //deleting mastered record on setting back
 
-   await History.deleteMany({
+    await History.deleteMany({
       userRef: ObjectId(req.user._id),
       polemoveRef: ObjectId(req.body.polemoveId),
       type: 'mastered',
@@ -154,6 +155,7 @@ exports.updateProgress = async (req, res, next) => {
 }
 
 exports.resetProgress = async (req, res, next) => {
+  console.log('somehow I hit the reset shit even though i shouldnt have????????')
   const updatedUser = await User.findByIdAndUpdate(req.user._id, {
     $pull: {
       polemoves: {
@@ -168,13 +170,8 @@ exports.resetProgress = async (req, res, next) => {
   })
 
   //Removing file from bunny
-  mediaFiles.forEach((file) =>
-    bunny.delete({
-      polemoveId: req.body.polemoveId,
-      userId: req.user._id,
-      filename: `${file._id}.${file.extension}`,
-    })
-  )
+  bunny.deleteFolder(req.user._id, req.body.polemoveId)
+
   //removing media&history records
   await Media.deleteMany({
     userRef: ObjectId(req.user._id),
@@ -193,7 +190,6 @@ exports.resetProgress = async (req, res, next) => {
     polemove: polemove,
   })
 }
-
 
 exports.addNote = async (req, res, next) => {
   try {
