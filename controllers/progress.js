@@ -82,10 +82,26 @@ exports.resetProgress = async (req, res, next) => {
 
   await User.findOneAndUpdate(
     { _id: req.user._id },
-    { $pull: { polemoves: req.body.progressId } }
+    {
+      $pull: {
+        polemoves: {
+          _id: req.body.progressRef,
+        },
+        activity: {
+          progressRef: ObjectId(req.body.progressId),
+        },
+      },
+    }
   )
 
   return res.status(200).json({
     message: 'Move removed from user',
   })
 }
+
+//5ef31b9c56400e0bbdddc28e
+//
+//{
+//    "polemoveId" : "5ef31b9c56400e0bbdddc28e",
+ //   "mastered" : "false"
+//}
