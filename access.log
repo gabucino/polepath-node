@@ -8980,3 +8980,11 @@
 [0mPOST /api/progress/start [32m200[0m 1513.332 ms - 119[0m
 [0mOPTIONS /api/progress/reset [32m200[0m 0.261 ms - 4[0m
 [0mPOST /api/progress/reset [32m200[0m 1062.064 ms - 36[0m
+[0mOPTIONS /api/progress/start [32m200[0m 3.433 ms - 4[0m
+[0mPOST /api/progress/start [32m200[0m 1573.219 ms - 119[0m
+[0mOPTIONS /api/progress/5f6074c7dee62a5d4768bfde/reset [32m200[0m 0.518 ms - 6[0m
+[0mDELETE /api/progress/5f6074c7dee62a5d4768bfde/reset [32m200[0m 1193.288 ms - 36[0m
+[0mOPTIONS /api/progress/5f6074c7dee62a5d4768bfde/reset [32m200[0m 4.030 ms - 6[0m
+[0mDELETE /api/progress/5f6074c7dee62a5d4768bfde/reset [32m200[0m 3414.405 ms - 36[0m
+[0mOPTIONS /api/progress/5f6075af729d215ef8e30443/reset [32m200[0m 0.462 ms - 6[0m
+[0mDELETE /api/progress/5f6075af729d215ef8e30443/reset [32m200[0m 1230.039 ms - 36[0m

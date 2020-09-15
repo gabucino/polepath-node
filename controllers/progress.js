@@ -79,15 +79,16 @@ exports.updateProgress = async (req, res, next) => {
 
 exports.resetProgress = async (req, res, next) => {
   console.log('resetprogress fired')
-  await Progress.deleteOne({ _id: req.body.progressId })
+  console.log(req.params.progressId)
+  await Progress.deleteOne({ _id: req.params.progressId })
 
-  const updatedUser = await User.findOneAndUpdate(
+  await User.findOneAndUpdate(
     { _id: req.user._id },
     {
       $pull: {
-        polemoves: ObjectId(req.body.progressId),
+        polemoves: ObjectId(req.params.progressId),
         activity: {
-          progressId: ObjectId(req.body.progressId),
+          progressId: ObjectId(req.params.progressId),
         },
       },
     }

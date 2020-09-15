@@ -18,8 +18,8 @@ router.post(
   progressController.updateProgress
 )
 
-router.post(
-  '/reset',
+router.delete(
+  '/:progressId/reset',
   passport.authenticate('jwt', {
     session: false,
   }),
