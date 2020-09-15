@@ -99,9 +99,56 @@ exports.resetProgress = async (req, res, next) => {
   })
 }
 
+//Handling notes
+
+exports.addNote = async (req, res, next) => {
+  try {
+    //inc progressId, text
+    const updatedProgress = await Progress.findOneAndUpdate(
+      req.body.progressId,
+      {
+        $push: {
+          notes: {
+            text: req.body.text,
+          },
+        },
+      },
+      { new: true }
+    )
+
+    return res.status(200).json({
+      message: 'Note added',
+    })
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+    next(err)
+  }
+}
+
+exports.deleteNote = async (req, res, next) => {
+  //need progressid, noteid in params,
+  const updatedProgress = await Progress.findOneAndUpdate(
+    req.params.progressId,
+    {
+      $pull: {
+        notes: {
+          _id: req.params.noteId,
+        },
+      },
+    },
+    { new: true }
+  )
+
+  return res.status(200).json({
+    message: `${req.params.noteId} note has been deleted`
+  })
+}
+
 //5ef31b9c56400e0bbdddc28e
 //
 //{
 //    "polemoveId" : "5ef31b9c56400e0bbdddc28e",
- //   "mastered" : "false"
+//   "mastered" : "false"
 //}

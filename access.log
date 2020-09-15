@@ -8939,3 +8939,9 @@
 [0mPOST /api/progress/start [32m200[0m 1715.627 ms - 119[0m
 [0mOPTIONS /api/progress/reset [32m200[0m 0.161 ms - 4[0m
 [0mPOST /api/progress/reset [32m200[0m 1208.302 ms - 36[0m
+[0mOPTIONS /api/progress/start [32m200[0m 2.250 ms - 4[0m
+[0mPOST /api/progress/start [32m200[0m 1392.349 ms - 119[0m
+[0mOPTIONS /api/progress/addnote [32m200[0m 0.285 ms - 4[0m
+[0mPOST /api/progress/addnote [31m500[0m 894.711 ms - 38[0m
+[0mOPTIONS /api/progress/5f605ae6c199184a2b6bbf1b/notes/5f605b30c199184a2b6bbf1d [32m200[0m 7.335 ms - 6[0m
+[0mDELETE /api/progress/5f605ae6c199184a2b6bbf1b/notes/5f605b30c199184a2b6bbf1d [32m200[0m 747.534 ms - 60[0m
