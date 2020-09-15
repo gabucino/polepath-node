@@ -18,7 +18,7 @@ exports.startProgress = async (req, res, next) => {
     user.polemoves.push(createdProgress._id)
     user.activity.push({
       event: req.body.mastered ? 'mastered' : 'started',
-      progressRef: createdProgress._id,
+      progressId: createdProgress._id,
     })
 
     await user.save()
@@ -53,14 +53,14 @@ exports.updateProgress = async (req, res, next) => {
       const user = await User.findById(req.user._id)
       user.activity.push({
         event: 'mastered',
-        progressRef: req.body.progressId,
+        progressId: req.body.progressId,
       })
       await user.save()
     } else {
       await User.findOneAndUpdate(
         {
           _id: ObjectId(req.user._id),
-          'activity.progressRef': ObjectId(req.body.progressId),
+          'activity.progressId': ObjectId(req.body.progressId),
           'activity.event': 'mastered',
         },
         { $set: { 'activity.$.event': 'started' } }
@@ -78,17 +78,16 @@ exports.updateProgress = async (req, res, next) => {
 }
 
 exports.resetProgress = async (req, res, next) => {
+  console.log('resetprogress fired')
   await Progress.deleteOne({ _id: req.body.progressId })
 
-  await User.findOneAndUpdate(
+  const updatedUser = await User.findOneAndUpdate(
     { _id: req.user._id },
     {
       $pull: {
-        polemoves: {
-          _id: req.body.progressRef,
-        },
+        polemoves: ObjectId(req.body.progressId),
         activity: {
-          progressRef: ObjectId(req.body.progressId),
+          progressId: ObjectId(req.body.progressId),
         },
       },
     }
@@ -142,7 +141,7 @@ exports.deleteNote = async (req, res, next) => {
   )
 
   return res.status(200).json({
-    message: `${req.params.noteId} note has been deleted`
+    message: `${req.params.noteId} note has been deleted`,
   })
 }
 

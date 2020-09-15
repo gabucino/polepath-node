@@ -30,7 +30,7 @@ const userSchema = new Schema(
     activity: [
       {
         event: { type: String, required: true },
-        progressRef: { type: Schema.Types.ObjectId },
+        progressId: { type: Schema.Types.ObjectId },
         createdAt: { type: Date, default: Date.now() },
       },
     ],
