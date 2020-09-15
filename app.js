@@ -34,7 +34,7 @@ const usersRoutes = require('./routes/users')
 const polemovesRoutes = require('./routes/polemoves')
 const mediaRoutes = require('./routes/media')
 const authRoutes = require('./routes/auth')
-const moveProgressRoutes = require('./routes/moveProgress')
+const progressRoutes = require('./routes/progress')
 
 // const privateKey = fs.readFileSync('server.key')
 // const certificate = fs.readFileSync('server.cert')
@@ -91,7 +91,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/users', usersRoutes)
 app.use('/api/moves', polemovesRoutes)
 app.use('/api/media', mediaRoutes)
-app.use('/api/progress', moveProgressRoutes)
+app.use('/api/progress', progressRoutes)
 
 
 app.use(helmet())

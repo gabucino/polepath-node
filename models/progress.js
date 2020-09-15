@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const Schema = mongoose.Schema
 
-const moveProgressSchema = new Schema(
+const progressSchema = new Schema(
 {
     userRef: {
         type: Schema.Types.ObjectId,
@@ -26,11 +26,11 @@ const moveProgressSchema = new Schema(
           description: { type: String },
           date: { type: Date, default: Date.now(), required: true },
           extension: { type: String, required: true },
-          timestamp: { type: Date, default: Date.now() },
+          createdAt: { type: Date, default: Date.now() },
     }]
     
 }, {timestamps: true}
 
 )
 
-module.exports = mongoose.model('MoveProgress', moveProgressSchema)
+module.exports = mongoose.model('Progress', progressSchema)

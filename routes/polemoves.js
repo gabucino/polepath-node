@@ -21,19 +21,4 @@ router.get(
   polemovesController.viewAll
 )
 
-router.get(
-  '/polemoves/:polemoveId',
-  passport.authenticate('jwt', {
-    session: false,
-  }),
-  polemovesController.view
-)
-
-//Get extra data (eg. photos/notes etc)
-router.get(
-  '/polemoves/extra/:polemoveId',
-  passport.authenticate('jwt', { session: false }),
-  polemovesController.extra
-)
-
 module.exports = router

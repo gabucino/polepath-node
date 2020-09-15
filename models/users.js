@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-mongoose.set('useCreateIndex', true);
+mongoose.set('useCreateIndex', true)
 
 const Schema = mongoose.Schema
 
@@ -8,13 +8,13 @@ const userSchema = new Schema(
     stageName: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
     },
     googleId: String,
     facebookId: String,
     email: {
       type: String,
-      unique: true
+      unique: true,
     },
     password: {
       type: String,
@@ -27,8 +27,14 @@ const userSchema = new Schema(
       type: String,
     },
     polemoves: [{ type: Schema.Types.ObjectId, ref: 'MoveProgress' }],
+    activity: [
+      {
+        event: { type: String, required: true },
+        progressRef: { type: Schema.Types.ObjectId },
+        createdAt: { type: Date, default: Date.now() },
+      },
+    ],
     trainingPlan: [{ type: Schema.Types.ObjectId, ref: 'Polemove' }],
-
   },
   { timestamps: true }
 )

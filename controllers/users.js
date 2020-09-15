@@ -2,7 +2,7 @@ const User = require('../models/users')
 const Polemove = require('../models/polemoves')
 const Media = require('../models/media')
 const History = require('../models/history')
-const MoveProgress = require('../models/moveProgress')
+const Progress = require('../models/progress')
 
 const progressService = require('../services/progress')
 
@@ -79,80 +79,6 @@ exports.changeAvatar = async (req, res, next) => {
   }
 }
 //Moves
-
-//Progress handling controllers
-exports.startProgress = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.user._id)
-
-    const newMove = {
-      refId: req.body.polemoveId,
-      mastered: req.body.mastered,
-    }
-
-    user.polemoves.push(newMove)
-    const updatedUser = await user.save()
-
-    const historyType = req.body.mastered ? 'mastered' : 'started'
-
-    helpers.createHistory(
-      historyType,
-      ObjectId(req.user._id),
-      ObjectId(req.body.polemoveId)
-    )
-
-    return res.status(200).json({
-      message: 'Move added succesfully',
-      updatedMove: updatedUser.polemoves[updatedUser.polemoves.length - 1],
-    })
-  } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500
-    }
-  }
-}
-
-exports.updateProgress = async (req, res, next) => {
-  const updatedUser = await User.findOneAndUpdate(
-    { _id: req.user._id, 'polemoves.refId': req.body.polemoveId },
-    {
-      $set: {
-        polemoves: {
-          refId: req.body.polemoveId,
-          mastered: req.body.mastered,
-        },
-      },
-    },
-    { new: true }
-  )
-
-  const updatedMove = updatedUser.polemoves.find(
-    (move) => move.refId.toString() === req.body.polemoveId.toString()
-  )
-
-  const historyType = req.body.mastered ? 'mastered' : 'started'
-
-  helpers.createHistory(
-    historyType,
-    ObjectId(req.user._id),
-    ObjectId(req.body.polemoveId)
-  )
-
-  if (!req.body.mastered) {
-    //deleting mastered record on setting back
-
-    await History.deleteMany({
-      userRef: ObjectId(req.user._id),
-      polemoveRef: ObjectId(req.body.polemoveId),
-      type: 'mastered',
-    })
-  }
-
-  return res.status(200).json({
-    message: `Mastered is now ${updatedMove.mastered}`,
-    updatedMove: updatedMove,
-  })
-}
 
 exports.resetProgress = async (req, res, next) => {
   console.log('somehow I hit the reset shit even though i shouldnt have????????')

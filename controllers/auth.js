@@ -95,41 +95,16 @@ exports.login = async (req, res) => {
   const token = signToken(req.user)
 
   //Getting user and all moves from DB
-  const user = await User.findById(req.user._id)
-  const allPolemoves = await Polemove.find()
-
-  //Creating one big array containing all polemove data
-  const polemoveWithUserdata = allPolemoves.map((el) => {
-    const currentMove = user.polemoves.find(
-      (userMove) => userMove.refId.toString() === el._id.toString()
-    )
-
-    //el : original move data - NEED _ID
-    //currentMove: usermoveData _ NO NEED ID
-
-
-    if (currentMove) {
-      return {
-        mastered: currentMove.toObject().mastered,
-        ...el.toObject(),
-      }
-    }
-    return el.toObject()
-  })
-
+  const user = await User.findById(req.user._id).populate('polemoves', 'moveRef mastered notes photos').exec()
 
   res.status(200).json({
     message: 'Login Successful',
     token: token,
-    role: user.role,
-    stageName: user.stageName,
-    email: user.email,
-    photoURL: user.profilePic
-      ? `https://polepath.b-cdn.net/users/${user._id}/profilepics/${user.profilePic}`
-      : '',
-    polemoves: polemoveWithUserdata,
+    // role: user.role,
+    user: user,
   })
 }
+
 
 exports.logout = (req, res) => {
   //handle with passport

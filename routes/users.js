@@ -24,23 +24,6 @@ router.post(
 
 
 
-//Progress handling routes
-router.post(
-  '/polemoves/startprogress',
-  passport.authenticate('jwt', {
-    session: false,
-  }),
-  usersController.startProgress
-)
-
-router.post(
-  '/polemoves/updateprogress',
-  passport.authenticate('jwt', {
-    session: false,
-  }),
-  usersController.updateProgress
-)
-
 router.post(
   '/polemoves/resetprogress',
   passport.authenticate('jwt', {
