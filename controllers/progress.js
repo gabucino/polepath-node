@@ -3,6 +3,8 @@ const ObjectId = require('mongodb').ObjectID
 const Progress = require('../models/progress')
 const User = require('../models/users')
 
+const bunny = require('../util/bunny')
+
 exports.startProgress = async (req, res, next) => {
   try {
     console.log('PROGRESSCONTROLLER - START PROGRESS')
@@ -80,8 +82,22 @@ exports.updateProgress = async (req, res, next) => {
 exports.resetProgress = async (req, res, next) => {
   console.log('resetprogress fired')
   console.log(req.params.progressId)
-  await Progress.deleteOne({ _id: req.params.progressId })
 
+  //db delete
+  const deletedMove = await Progress.findOneAndDelete({
+    _id: req.params.progressId,
+  })
+  console.log(deletedMove)
+
+  //bunny delete
+  const options = {
+    userId: req.user._id,
+    polemoveId: deletedMove.moveRef,
+  }
+
+  bunny.deleteFolder(options)
+
+  //delete from User
   await User.findOneAndUpdate(
     { _id: req.user._id },
     {
@@ -129,7 +145,7 @@ exports.addNote = async (req, res, next) => {
 
 exports.deleteNote = async (req, res, next) => {
   //need progressid, noteid in params,
-  const updatedProgress = await Progress.findOneAndUpdate(
+  await Progress.findOneAndUpdate(
     req.params.progressId,
     {
       $pull: {
@@ -145,6 +161,8 @@ exports.deleteNote = async (req, res, next) => {
     message: `${req.params.noteId} note has been deleted`,
   })
 }
+
+//Photo upload
 
 //5ef31b9c56400e0bbdddc28e
 //

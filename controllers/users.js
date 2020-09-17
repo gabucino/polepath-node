@@ -149,37 +149,6 @@ exports.addNote = async (req, res, next) => {
   }
 }
 
-exports.deleteNote = async (req, res, next) => {
-  const userId = req.user._id
-  const polemoveId = req.body.polemoveId
-  const noteId = req.body.noteId
-
-  //finding that note arr
-  const user = await User.findById(userId)
-
-  const polemove = user.polemoves.find(
-    (el) => el.refId.toString() === polemoveId.toString()
-  )
-
-  const notes = polemove.notes
-  const noteIndex = notes.findIndex(
-    (el) => el._id.toString() === noteId.toString()
-  )
-
-  if (noteIndex > -1) {
-    notes.splice(noteIndex, 1)
-  }
-
-  const updatedUser = await user.save()
-
-  const foundMove = updatedUser.polemoves.find(
-    (move) => move.refId.toString() === polemoveId
-  )
-
-  return res.status(200).json({
-    message: 'boring response',
-  })
-}
 
 exports.getHistory = async (req, res, next) => {
   try {

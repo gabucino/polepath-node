@@ -22,32 +22,6 @@ router.post(
   usersController.changeAvatar
 )
 
-
-
-router.post(
-  '/polemoves/resetprogress',
-  passport.authenticate('jwt', {
-    session: false,
-  }),
-  usersController.resetProgress
-)
-
-router.post(
-  '/polemoves/addnotes',
-  passport.authenticate('jwt', {
-    session: false,
-  }),
-  usersController.addNote
-)
-
-router.post(
-  '/polemoves/deletenote',
-  passport.authenticate('jwt', {
-    session: false,
-  }),
-  usersController.deleteNote
-)
-
 router.get(
   '/history',
   passport.authenticate('jwt', { session: false }),

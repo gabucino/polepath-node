@@ -17,10 +17,7 @@ const poleMovesSchema = new Schema(
       type: String,
     },
     extension: { type: String },
-
-    //users public photos and notes
-    // photos: []
-    // usersNotes: [{ type: String }],
+    publicMedia: [{ type: Schema.Types.ObjectId, ref: 'Media' }],
   },
   { timestamps: true }
 )

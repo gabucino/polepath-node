@@ -66,11 +66,11 @@ exports.getAll = async (data) => {
   }
 }
 
-exports.deleteFolder = async (userId, polemoveId ) => {
+exports.deleteFolder = async ({userId, polemoveId}) => {
   try {
     console.log(userId, polemoveId)
     const response = await axios.delete(
-      `https://storage.bunnycdn.com/polepath/users/${userId}/${polemoveId}`,
+      `https://storage.bunnycdn.com/polepath/users/${userId}/${polemoveId}/`,
       {
         headers: {
           AccessKey: process.env.BUNNY_STORAGE_API_KEY,
@@ -85,7 +85,7 @@ exports.deleteFolder = async (userId, polemoveId ) => {
 exports.delete = async ({ polemoveId, userId, filename }) => {
   try {
     const response = await axios.delete(
-      `https://storage.bunnycdn.com/polepath/users/${userId}/${polemoveId}/${filename}/`,
+      `https://storage.bunnycdn.com/polepath/users/${userId}/${polemoveId}/${filename}`,
       {
         headers: {
           AccessKey: process.env.BUNNY_STORAGE_API_KEY,

@@ -2,87 +2,78 @@ const ObjectId = require('mongoose').Types.ObjectId
 const User = require('../models/users')
 const Media = require('../models/media')
 const History = require('../models/history')
+const Progress = require('../models/progress')
 
 const bunny = require('../util/bunny')
-const helpers = require('../util/helpers')
 
 const moment = require('moment')
+const { updateProgress } = require('./progress')
 
 //Add progressphoto
 
 exports.addProgressPhoto = async (req, res, next) => {
   try {
     const polemoveId = req.body.polemoveId
-    const photodate = req.body.date
-    const privacy = req.body.privacy
-    const category = req.body.category
+    const progressId = req.body.progressId
+    const userId = ObjectId(req.user._id)
 
     const image = req.file
-    const extension = image.mimetype.split('/').pop()
 
     if (!image) {
       return res.status(422).json({
         message: 'Attached file is not an image',
       })
     }
-    const user = await User.findById(req.user._id)
 
     //DB photos upload
-    const photo = new Media({
+    const media = new Media({
       category: 'photo',
-      privacy: privacy,
-      extension: extension,
-      date: req.body.photodate,
-      userRef: user._id,
-      polemoveRef: polemoveId,
+      privacy: 'private',
+      extension: image.mimetype.split('/').pop(),
+      date: new Date(),
+      userRef: userId,
+      moveRef: polemoveId,
     })
-
-    const createdMedia = await photo.save()
-
-    const newPhoto = {
-      _id: createdMedia._id,
-      date: moment(createdMedia.date.getTime()).format('D MMMM YYYY'),
-      path:`https://polepath.b-cdn.net/users/${req.user._id}/${polemoveId}/${createdMedia._id}.${createdMedia.extension}`
-    }
-
-    const polemove = user.polemoves.find(
-      el => {
-        console.log(el.refId.toString() === polemoveId.toString());
-      return  el.refId.toString() === polemoveId.toString()}
-    )
-
-    console.log(polemove);
-    polemove.photos.push(createdMedia)
-
-    await user.save()
+    const createdMedia = await media.save()
 
     //Bunny upload
     const picId = createdMedia._id.toString()
-
-    const bunnyFileName = `${picId}.${extension}`
-
     const bunnyData = {
       fsFileName: image.filename,
-      bunnyFileName: bunnyFileName,
-      path: `users/${req.user._id}/${polemoveId}`,
+      bunnyFileName: `${picId}.${image.mimetype.split('/').pop()}`,
+      path: `users/${userId}/${polemoveId}`,
     }
-
     await bunny.upload(bunnyData)
-    console.log('Bunny upload done');
 
     //Public DB uload
     // if (privacy === 'public') {
     //   const publicPolemove = await Polemove.findById(polemoveId)
     // }
-    //Response
 
-    const userPhotos = await Media.find({
-      polemoveRef: polemoveId,
-      userRef: req.user._id,
+    await Progress.findOneAndUpdate(progressId, {
+      $push: {
+        media: createdMedia._id,
+      },
     })
+    await User.findOneAndUpdate(
+      { _id: req.user._id },
+      {
+        $push: {
+          activity: {
+            event: 'photo',
+            polemoveId: polemoveId,
+            itemId: createdMedia._id,
+          },
+        },
+      }
+    )
 
-
-    helpers.createHistory('photo', ObjectId(req.user._id), ObjectId(polemoveId), ObjectId(photo._id))
+    //Response
+    const newPhoto = {
+      _id: createdMedia._id,
+      date: moment(createdMedia.date.getTime()).format('D MMMM YYYY'),
+      path: `https://polepath.b-cdn.net/users/${userId}/${polemoveId}/${createdMedia._id}.${createdMedia.extension}`,
+    }
 
     return res.status(200).json({
       message: 'Photo uploaded',
@@ -96,59 +87,35 @@ exports.addProgressPhoto = async (req, res, next) => {
   }
 }
 
-
 exports.delete = async (req, res, next) => {
   try {
-    console.log('deleting shit even though i shouldnt?????????')
-    const photoId = req.params.id
-    const userId = req.user._id
+    console.log('DELETE PHOTO CODE')
+    const media = await Media.findOneAndDelete(req.params.mediaId)
 
-    const photo = await Media.findById(photoId)
-    const polemoveRef = photo.polemoveRef.toString()
-
-    //check if deleter is the correct user
-    if (userId.toString() !== photo.userRef.toString()) {
-      const error = new Error(
-        "You don't have the permission to perform this action"
-      )
-      error.statusCode = 401
-      throw error
-    }
-
-    //Delete from bunny
-    const bunnyData = {
-      polemoveId: polemoveRef,
-      userId: userId,
-      filename: `${photoId}.${photo.extension}`,
-    }
-
-    await bunny.delete(bunnyData)
-
-    await Media.findByIdAndDelete(photoId)
-
-    await History.deleteOne({
-      itemRef: ObjectId(photoId),
-    })
-
-    const user = await User.findById(userId)
-
-
-    const polemoveIndex = user.polemoves.findIndex(
-      (el) => el.refId.toString() === polemoveRef
+    console.log('media', media)
+    //Delete ref in Progress
+    const updatedProgress = await Progress.findOneAndUpdate(
+      {
+        _id: req.params.progressId,
+      },
+      {
+        $pull: {
+          media: ObjectId(media._id),
+        },
+      },
+      { new: true }
     )
 
-    const newPhotos = user.polemoves[polemoveIndex].photos.filter(
-      (el) => el.toString() !== photoId
-    )
+    console.log('UPDATEDPROGRESS:', updatedProgress)
+    //Delete from storage
+    const options = {
+      userId: req.user._id,
+      polemoveId: media.moveRef,
+      filename: `${media._id}.${media.extension}`
+    }
 
-    user.polemoves[polemoveIndex].photos = newPhotos
+    bunny.delete(options)
 
-    // const updatedUser = await User.findOneAndUpdate({
-    //   _id: userId,
-    //   'polemoves.refId': polemoveRef,
-    // }, {})
-
-    await user.save()
 
     return res.status(200).json({
       message: 'Photo deleted',

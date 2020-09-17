@@ -14,13 +14,11 @@ router.post(
 )
 
 router.delete(
-  '/delete/:id',
+  '/delete/:progressId/:mediaId',
   passport.authenticate('jwt', {
     session: false,
   }),
   mediaController.delete
 )
-
-
 
 module.exports = router

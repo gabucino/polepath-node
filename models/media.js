@@ -16,7 +16,7 @@ const mediaSchema = new Schema(
       ref: 'User',
       required: true,
     },
-    polemoveRef: {
+    moveRef: {
       type: Schema.Types.ObjectId,
       ref: 'Polemove',
       required: true,
