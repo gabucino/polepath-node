@@ -2,6 +2,7 @@ const ObjectId = require('mongodb').ObjectID
 
 const Progress = require('../models/progress')
 const User = require('../models/users')
+const Media = require('../models/media')
 
 const bunny = require('../util/bunny')
 
@@ -96,6 +97,8 @@ exports.resetProgress = async (req, res, next) => {
   }
 
   bunny.deleteFolder(options)
+
+  await Media.deleteMany({progressRef: req.params.progressId})
 
   //delete from User
   await User.findOneAndUpdate(

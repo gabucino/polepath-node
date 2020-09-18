@@ -21,6 +21,10 @@ const mediaSchema = new Schema(
       ref: 'Polemove',
       required: true,
     },
+    progressRef: {
+      type: Schema.Types.ObjectId,
+      ref: 'Progress',
+    },
     extension: { type: String, required: true },
   },
   { timestamps: true }

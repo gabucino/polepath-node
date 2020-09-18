@@ -80,43 +80,6 @@ exports.changeAvatar = async (req, res, next) => {
 }
 //Moves
 
-exports.resetProgress = async (req, res, next) => {
-  console.log('somehow I hit the reset shit even though i shouldnt have????????')
-  const updatedUser = await User.findByIdAndUpdate(req.user._id, {
-    $pull: {
-      polemoves: {
-        refId: req.body.polemoveId,
-      },
-    },
-  })
-
-  const mediaFiles = await Media.find({
-    userRef: req.user._id,
-    polemoveRef: req.body.polemoveId,
-  })
-
-  //Removing file from bunny
-  bunny.deleteFolder(req.user._id, req.body.polemoveId)
-
-  //removing media&history records
-  await Media.deleteMany({
-    userRef: ObjectId(req.user._id),
-    polemoveRef: ObjectId(req.body.polemoveId),
-  })
-
-  await History.deleteMany({
-    userRef: ObjectId(req.user._id),
-    polemoveRef: ObjectId(req.body.polemoveId),
-  })
-
-  const polemove = await Polemove.findById(ObjectId(req.body.polemoveId))
-
-  return res.status(200).json({
-    message: 'Move removed from user',
-    polemove: polemove,
-  })
-}
-
 exports.addNote = async (req, res, next) => {
   try {
     const userId = req.user._id
@@ -149,36 +112,15 @@ exports.addNote = async (req, res, next) => {
   }
 }
 
-
 exports.getHistory = async (req, res, next) => {
   try {
-    const history = await History.find({ userRef: ObjectId(req.user._id) })
-      .sort({ createdAt: -1 })
-      .limit(5)
+    const user = await User.find({_id: req.user._id}).slice('activity', -5).exec()
 
-    const getPolemove = async (item) => {
-      const polemove = await Polemove.findById(item.polemoveRef)
-      if (polemove) {
-        return {
-          ...item.toObject(),
-          name: polemove.name,
-        }
-      }
-    }
-
-    const getData = async () => {
-      return Promise.all(
-        history.map((item) => {
-          return getPolemove(item)
-        })
-      )
-    }
-
-    const modifiedHistory = await getData()
+console.log(user.activity[0])
 
     return res.status(200).json({
       message: 'History retrieved',
-      history: modifiedHistory,
+      // history: modifiedHistory,
     })
   } catch (err) {
     if (!err.statusCode) {

@@ -33,6 +33,7 @@ exports.addProgressPhoto = async (req, res, next) => {
       date: new Date(),
       userRef: userId,
       moveRef: polemoveId,
+      progressRef: progressId
     })
     const createdMedia = await media.save()
 
@@ -63,6 +64,7 @@ exports.addProgressPhoto = async (req, res, next) => {
             event: 'photo',
             polemoveId: polemoveId,
             itemId: createdMedia._id,
+            progressId: progressId
           },
         },
       }
@@ -91,6 +93,17 @@ exports.delete = async (req, res, next) => {
   try {
     console.log('DELETE PHOTO CODE')
     const media = await Media.findOneAndDelete(req.params.mediaId)
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: req.user._id },
+      {
+        $pull: {
+          activity: {
+            itemId: media._id,
+          },
+        },
+      }
+    )
+    console.log('user:', updatedUser)
 
     console.log('media', media)
     //Delete ref in Progress
@@ -111,11 +124,10 @@ exports.delete = async (req, res, next) => {
     const options = {
       userId: req.user._id,
       polemoveId: media.moveRef,
-      filename: `${media._id}.${media.extension}`
+      filename: `${media._id}.${media.extension}`,
     }
 
     bunny.delete(options)
-
 
     return res.status(200).json({
       message: 'Photo deleted',
