@@ -9,7 +9,7 @@ const passport = require('passport')
 
 
 router.put(
-    '/create',
+    '/',
     [
       body('email')
         .normalizeEmail({ gmail_remove_dots: false })
@@ -48,7 +48,7 @@ router.put(
       //   (value, { req }) => value === req.body.password
       // ),
     ],
-    authController.create
+    authController.createUser
   )
   
   router.post(

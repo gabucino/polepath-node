@@ -37,7 +37,7 @@ signToken = (user) => {
   )
 }
 
-exports.create = async (req, res, next) => {
+exports.createUser = async (req, res, next) => {
   try {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -57,12 +57,9 @@ exports.create = async (req, res, next) => {
       stageName: stageName,
       password: hashedPw,
     })
-    const createdUser = await user.save()
+    await user.save()
 
-    const token = signToken(createdUser)
-    res
-      .status(201)
-      .json({ message: 'User created', token: token, user: createdUser })
+    res.status(201).json({ message: 'User created' })
 
     // transporter.sendMail({
     //   to: email,
@@ -95,16 +92,18 @@ exports.login = async (req, res) => {
   const token = signToken(req.user)
 
   //Getting user and all moves from DB
-  const user = await User.findById(req.user._id).populate('polemoves', 'moveRef mastered notes photos').exec()
+  const user = await User.findById(req.user._id)
+    .populate('polemoves', 'moveRef mastered notes photos')
+    .exec()
+
+  const { password, createdAt, updatedAt, __v, ...responseUser} = user.toObject()
 
   res.status(200).json({
     message: 'Login Successful',
     token: token,
-    // role: user.role,
-    user: user,
+    user: responseUser,
   })
 }
-
 
 exports.logout = (req, res) => {
   //handle with passport

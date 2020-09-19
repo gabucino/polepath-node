@@ -116,8 +116,6 @@ exports.getHistory = async (req, res, next) => {
   try {
     const user = await User.find({_id: req.user._id}).slice('activity', -5).exec()
 
-console.log(user.activity[0])
-
     return res.status(200).json({
       message: 'History retrieved',
       // history: modifiedHistory,
