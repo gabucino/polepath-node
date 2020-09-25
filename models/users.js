@@ -30,7 +30,7 @@ const userSchema = new Schema(
     activity: [
       {
         event: { type: String, required: true },
-        polemoveId: { type: Schema.Types.ObjectId },
+        polemoveId: { type: Schema.Types.ObjectId, ref: 'Polemove' },
         progressId: { type: Schema.Types.ObjectId },
         itemId: { type: Schema.Types.ObjectId },
         createdAt: { type: Date, default: Date.now() },

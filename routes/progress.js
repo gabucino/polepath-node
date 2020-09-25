@@ -4,7 +4,7 @@ const passport = require('passport')
 const progressController = require('../controllers/progress')
 
 //progress change
-router.post(
+router.put(
   '/start',
   passport.authenticate('jwt', { session: false }),
   progressController.startProgress

@@ -78,47 +78,17 @@ exports.changeAvatar = async (req, res, next) => {
     next(err)
   }
 }
-//Moves
-
-exports.addNote = async (req, res, next) => {
-  try {
-    const userId = req.user._id
-    const polemoveId = req.body.polemoveId
-    const note = req.body.note
-
-    const user = await User.findById(userId)
-
-    const foundMove = user.polemoves.find(
-      (move) => move.refId.toString() === polemoveId
-    )
-
-    if (!foundMove) {
-      return res.status(404).json({
-        message: 'Sorry, move not found with this user',
-      })
-    }
-
-    foundMove.notes.push({ text: note })
-    await user.save()
-    return res.status(200).json({
-      message: 'Note added',
-      note: foundMove.notes[foundMove.notes.length - 1],
-    })
-  } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = 500
-    }
-    next(err)
-  }
-}
 
 exports.getHistory = async (req, res, next) => {
   try {
-    const user = await User.find({_id: req.user._id}).slice('activity', -5).exec()
+    const user = await User.findById({ _id: req.user._id })
+      .slice('activity', -5)
+      .populate({ path: 'activity.polemoveId', select: 'name' })
+      .exec()
 
     return res.status(200).json({
-      message: 'History retrieved',
-      // history: modifiedHistory,
+      activity: user.activity,
+      message: 'History retrieved2',
     })
   } catch (err) {
     if (!err.statusCode) {

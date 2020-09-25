@@ -91,17 +91,20 @@ exports.checkForErrors = async (req, res, next) => {
 exports.login = async (req, res) => {
   const token = signToken(req.user)
 
-  //Getting user and all moves from DB
+  //Getting user and progress (with media) from DB
   const user = await User.findById(req.user._id)
-    .populate('polemoves', 'moveRef mastered notes photos')
-    .exec()
+  .populate([{path: 'polemoves', select: 'moveRef mastered notes photos', populate: {
+    path: 'media', select: 'moveRef date _id extension'
+  }}, {path: 'activity.polemoveId', select: 'name'}])
+  .exec()
 
-  const { password, createdAt, updatedAt, __v, ...responseUser} = user.toObject()
+  const { password, activity, createdAt, updatedAt, __v, polemoves, ...responseUser} = user.toObject()
 
   res.status(200).json({
     message: 'Login Successful',
     token: token,
     user: responseUser,
+    progress: user.polemoves
   })
 }
 

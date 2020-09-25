@@ -22,18 +22,13 @@ exports.startProgress = async (req, res, next) => {
     user.activity.push({
       event: req.body.mastered ? 'mastered' : 'started',
       progressId: createdProgress._id,
+      polemoveId: createdProgress.moveRef
     })
 
     await user.save()
-
-    return res.status(200).json({
+    return res.status(201).json({
       message: 'Move started',
-      progress: {
-        mastered: createdProgress.mastered,
-        photos: [],
-        notes: [],
-        progressId: createdProgress._id,
-      },
+      progressId: createdProgress._id,
     })
   } catch (err) {
     if (!err.statusCode) {
@@ -46,7 +41,7 @@ exports.updateProgress = async (req, res, next) => {
   try {
     console.log('UPDATEPROGRESS FIRED')
     //Need progressId, mastered
-    await Progress.findOneAndUpdate(
+  const progress =  await Progress.findOneAndUpdate(
       { _id: ObjectId(req.body.progressId) },
       { mastered: req.body.mastered }
     )
@@ -57,6 +52,7 @@ exports.updateProgress = async (req, res, next) => {
       user.activity.push({
         event: 'mastered',
         progressId: req.body.progressId,
+        polemoveId: progress.moveRef
       })
       await user.save()
     } else {
@@ -81,41 +77,49 @@ exports.updateProgress = async (req, res, next) => {
 }
 
 exports.resetProgress = async (req, res, next) => {
-  console.log('resetprogress fired')
-  console.log(req.params.progressId)
+  try {
+    console.log('resetprogress fired')
+    console.log(req.params.progressId)
 
-  //db delete
-  const deletedMove = await Progress.findOneAndDelete({
-    _id: req.params.progressId,
-  })
-  console.log(deletedMove)
+    //db delete
+    const deletedMove = await Progress.findOneAndDelete({
+      _id: req.params.progressId,
+    })
+    console.log(deletedMove)
 
-  //bunny delete
-  const options = {
-    userId: req.user._id,
-    polemoveId: deletedMove.moveRef,
-  }
+    //bunny delete
+    if (deletedMove.media.length) {
+      const options = {
+        userId: req.user._id,
+        polemoveId: deletedMove.moveRef,
+      }
 
-  bunny.deleteFolder(options)
+      bunny.deleteFolder(options)
 
-  await Media.deleteMany({progressRef: req.params.progressId})
-
-  //delete from User
-  await User.findOneAndUpdate(
-    { _id: req.user._id },
-    {
-      $pull: {
-        polemoves: ObjectId(req.params.progressId),
-        activity: {
-          progressId: ObjectId(req.params.progressId),
-        },
-      },
+      await Media.deleteMany({ progressRef: req.params.progressId })
     }
-  )
+    //delete from User
+    await User.findOneAndUpdate(
+      { _id: req.user._id },
+      {
+        $pull: {
+          polemoves: ObjectId(req.params.progressId),
+          activity: {
+            progressId: ObjectId(req.params.progressId),
+          },
+        },
+      }
+    )
 
-  return res.status(200).json({
-    message: 'Move removed from user',
-  })
+    return res.status(200).json({
+      message: 'Move removed from user',
+    })
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+    next(err)
+  }
 }
 
 //Handling notes

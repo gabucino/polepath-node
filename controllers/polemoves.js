@@ -68,20 +68,9 @@ exports.viewAll = async (req, res, next) => {
       'name level description otherNames extension'
     )
 
-    //Replace extension with photoURL
-    const movesWithPhoto = polemoves.map((move) => {
-      let objWithExtension = {
-        ...move.toObject(),
-        photoURL: `${move._id}.${move.extension}`,
-      }
-      let { extension, ...objWithoutExtension } = objWithExtension
-      console.log(objWithoutExtension)
-      return objWithoutExtension
-    })
-
     res
       .status(200)
-      .json({ message: 'Moves fetched succesfully', polemoves: movesWithPhoto })
+      .json({ message: 'Moves fetched succesfully', polemoves: polemoves })
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500

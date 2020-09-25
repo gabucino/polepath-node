@@ -51,7 +51,8 @@ exports.addProgressPhoto = async (req, res, next) => {
     //   const publicPolemove = await Polemove.findById(polemoveId)
     // }
 
-    await Progress.findOneAndUpdate(progressId, {
+
+    await Progress.findOneAndUpdate({_id: progressId}, {
       $push: {
         media: createdMedia._id,
       },
@@ -74,7 +75,8 @@ exports.addProgressPhoto = async (req, res, next) => {
     const newPhoto = {
       _id: createdMedia._id,
       date: moment(createdMedia.date.getTime()).format('D MMMM YYYY'),
-      path: `https://polepath.b-cdn.net/users/${userId}/${polemoveId}/${createdMedia._id}.${createdMedia.extension}`,
+      extension: createdMedia.extension,
+      moveRef: polemoveId
     }
 
     return res.status(200).json({
@@ -139,3 +141,7 @@ exports.delete = async (req, res, next) => {
     next(err)
   }
 }
+
+// const getProgressPhotos = async (req, res, next) => {
+//   const progress = await Progress.findById(req.body.progressId).populate('media', '')
+// }
