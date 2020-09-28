@@ -125,10 +125,12 @@ exports.resetProgress = async (req, res, next) => {
 //Handling notes
 
 exports.addNote = async (req, res, next) => {
+  console.log('adding note...')
+  console.log('body', req.body)
   try {
     //inc progressId, text
     const updatedProgress = await Progress.findOneAndUpdate(
-      req.body.progressId,
+      {_id: req.body.progressId},
       {
         $push: {
           notes: {
@@ -141,6 +143,7 @@ exports.addNote = async (req, res, next) => {
 
     return res.status(200).json({
       message: 'Note added',
+      newNoteId: updatedProgress.notes[updatedProgress.notes.length -1]._id
     })
   } catch (err) {
     if (!err.statusCode) {
@@ -151,9 +154,9 @@ exports.addNote = async (req, res, next) => {
 }
 
 exports.deleteNote = async (req, res, next) => {
-  //need progressid, noteid in params,
+console.log('deleting note')
   await Progress.findOneAndUpdate(
-    req.params.progressId,
+    {_id: req.params.progressId},
     {
       $pull: {
         notes: {

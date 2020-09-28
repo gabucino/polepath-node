@@ -8,6 +8,7 @@ const moment = require('moment')
 
 exports.create = async (req, res, next) => {
   try {
+    console.log(req.body)
     const name = req.body.name
     let otherNames = req.body.otherNames
     const level = req.body.level
@@ -50,9 +51,8 @@ exports.create = async (req, res, next) => {
       await bunnies.upload(bunnyData)
     }
 
-    res
-      .status(201)
-      .json({ message: 'Polemove created', polemoveId: createdMove._id })
+    const { __v, createdAt, updatedAt, ...responseMove } = newMove.toObject()
+    res.status(201).json({ message: 'Polemove created', newMove: responseMove })
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500
@@ -78,4 +78,3 @@ exports.viewAll = async (req, res, next) => {
     next(err)
   }
 }
-
