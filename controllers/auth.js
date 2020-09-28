@@ -9,6 +9,7 @@ const jwt = require('jsonwebtoken')
 const { jsonSecret } = require('../config/keys')
 const bcrypt = require('bcrypt')
 const { validationResult } = require('express-validator')
+const { response } = require('express')
 
 const transporter = nodemailer.createTransport(
   sendgridTransport({
@@ -98,7 +99,8 @@ exports.login = async (req, res) => {
   }}, {path: 'activity.polemoveId', select: 'name'}])
   .exec()
 
-  const { password, activity, createdAt, updatedAt, __v, polemoves, ...responseUser} = user.toObject()
+  const {profilePic, password, activity, createdAt, updatedAt, __v, polemoves, ...responseUser} = user.toObject()
+  responseUser.photoURL = `https://polepath.b-cdn.net/users/${responseUser._id}/profilepics/${user.profilePic}`
 
   res.status(200).json({
     message: 'Login Successful',
