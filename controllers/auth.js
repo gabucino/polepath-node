@@ -94,19 +94,39 @@ exports.login = async (req, res) => {
 
   //Getting user and progress (with media) from DB
   const user = await User.findById(req.user._id)
-  .populate([{path: 'polemoves', select: 'moveRef mastered notes photos', populate: {
-    path: 'media', select: 'moveRef date _id extension'
-  }}, {path: 'activity.polemoveId', select: 'name'}])
-  .exec()
+    .populate([
+      {
+        path: 'polemoves',
+        select: 'moveRef mastered notes photos',
+        populate: {
+          path: 'media',
+          select: 'moveRef date _id extension',
+        },
+      },
+      { path: 'activity.polemoveId', select: 'name' },
+    ])
+    .exec()
 
-  const {profilePic, password, activity, createdAt, updatedAt, __v, polemoves, ...responseUser} = user.toObject()
-  responseUser.photoURL = `https://polepath.b-cdn.net/users/${responseUser._id}/profilepics/${user.profilePic}`
+  const {
+    profilePic,
+    password,
+    activity,
+    createdAt,
+    updatedAt,
+    __v,
+    polemoves,
+    ...responseUser
+  } = user.toObject()
+
+  if (user.profilePic) {
+    responseUser.photoURL = `https://polepath.b-cdn.net/users/${responseUser._id}/profilepics/${user.profilePic}`
+  }
 
   res.status(200).json({
     message: 'Login Successful',
     token: token,
     user: responseUser,
-    progress: user.polemoves
+    progress: user.polemoves,
   })
 }
 
