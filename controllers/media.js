@@ -30,7 +30,7 @@ exports.addProgressPhoto = async (req, res, next) => {
       category: 'photo',
       privacy: 'private',
       extension: image.mimetype.split('/').pop(),
-      date: new Date(),
+      date: req.body.date,
       userRef: userId,
       moveRef: polemoveId,
       progressRef: progressId

@@ -118,6 +118,8 @@ exports.login = async (req, res) => {
     ...responseUser
   } = user.toObject()
 
+  console.log(responseUser)
+
   if (user.profilePic) {
     responseUser.photoURL = `https://polepath.b-cdn.net/users/${responseUser._id}/profilepics/${user.profilePic}`
   }
