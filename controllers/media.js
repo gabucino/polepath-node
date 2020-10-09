@@ -1,7 +1,6 @@
 const ObjectId = require('mongoose').Types.ObjectId
 const User = require('../models/users')
 const Media = require('../models/media')
-const History = require('../models/history')
 const Progress = require('../models/progress')
 
 const bunny = require('../util/bunny')

@@ -35,6 +35,7 @@ const polemovesRoutes = require('./routes/polemoves')
 const mediaRoutes = require('./routes/media')
 const authRoutes = require('./routes/auth')
 const progressRoutes = require('./routes/progress')
+const faqRoutes = require('./routes/faq')
 
 // const privateKey = fs.readFileSync('server.key')
 // const certificate = fs.readFileSync('server.cert')
@@ -92,6 +93,7 @@ app.use('/api/users', usersRoutes)
 app.use('/api/moves', polemovesRoutes)
 app.use('/api/media', mediaRoutes)
 app.use('/api/progress', progressRoutes)
+app.use('/api/faq', faqRoutes)
 
 
 app.use(helmet())
@@ -99,7 +101,6 @@ app.use(compression())
 
 
 app.get('/*', (req, res) => {
-  console.log('ide mar nem kene');
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
