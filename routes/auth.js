@@ -4,6 +4,7 @@ const { body } = require('express-validator')
 
 const User = require('../models/users')
 const authController = require('../controllers/auth')
+const checks = require('../util/checks')
 
 const passport = require('passport')
 
@@ -53,7 +54,7 @@ router.put(
   
   router.post(
     '/login',
-    authController.checkForErrors,
+    checks.checkForErrors,
     passport.authenticate('local', { session: false }),
     authController.login
   )

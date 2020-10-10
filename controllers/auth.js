@@ -38,6 +38,9 @@ signToken = (user) => {
   )
 }
 
+
+
+
 exports.createUser = async (req, res, next) => {
   try {
     const errors = validationResult(req)
@@ -76,18 +79,7 @@ exports.createUser = async (req, res, next) => {
   }
 }
 
-exports.checkForErrors = async (req, res, next) => {
-  const email = req.body.email
 
-  const user = await User.findOne({ email: email.toLowerCase() })
-
-  if (!user) {
-    return res
-      .status(400)
-      .json({ message: 'No account found with this e-mail address.' })
-  }
-  next()
-}
 
 exports.login = async (req, res) => {
   const token = signToken(req.user)

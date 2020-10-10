@@ -1,15 +1,11 @@
-const User = require('../models/users')
-
-exports.create = async (user, event, progressId) => {
-  console.log('creating activity')
-  user.activity.push({
-    event: event,
-    progressId: progressId ? progressId : null,
-  })
-  
-  await user.save()
+exports.adminCheck = (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res
+      .status(401)
+      .json({ message: "You don't have the permission to do that" })
+  }
+  next()
 }
-
 
 exports.checkForErrors = async (req, res, next) => {
   const email = req.body.email
