@@ -13247,3 +13247,17 @@
 [0mGET /api/auth/autologin [32m200[0m 1844.757 ms - 1875[0m
 [0mOPTIONS /api/moves/polemoves [32m200[0m 0.553 ms - 8[0m
 [0mGET /api/moves/polemoves [36m304[0m 807.115 ms - -[0m
+[0mOPTIONS /api/users/history [32m200[0m 2.816 ms - 8[0m
+[0mGET /api/users/history [36m304[0m 1236.028 ms - -[0m
+[0mOPTIONS /api/users/history [32m200[0m 0.239 ms - 8[0m
+[0mGET /api/users/history [36m304[0m 4020.145 ms - -[0m
+[0mOPTIONS /api/auth/autologin [32m200[0m 0.322 ms - 8[0m
+[0mGET /api/auth/autologin [32m200[0m 1944.493 ms - 1875[0m
+[0mOPTIONS /api/moves/polemoves [32m200[0m 0.670 ms - 8[0m
+[0mGET /api/moves/polemoves [36m304[0m 641.062 ms - -[0m
+[0mOPTIONS /api/auth/autologin [32m200[0m 0.157 ms - 8[0m
+[0mGET /api/auth/autologin [32m200[0m 1595.826 ms - 1875[0m
+[0mOPTIONS /api/moves/polemoves [32m200[0m 0.175 ms - 8[0m
+[0mGET /api/moves/polemoves [36m304[0m 688.903 ms - -[0m
+[0mOPTIONS /api/users/history [32m200[0m 0.283 ms - 8[0m
+[0mGET /api/users/history [36m304[0m 1042.742 ms - -[0m
