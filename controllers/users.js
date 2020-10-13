@@ -88,7 +88,31 @@ exports.getHistory = async (req, res, next) => {
 
     return res.status(200).json({
       activity: user.activity,
-      message: 'History retrieved2',
+      message: 'History retrieved',
+    })
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+    next(err)
+  }
+}
+
+
+exports.addToTrainingPlan = async (req, res, next) => {
+  try {
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: req.user._id },
+      {
+        $push: {
+          trainingPlan: req.body.polemoveId
+        },
+      },
+      { new: true }
+    )
+
+    return res.status(200).json({
+      message: 'Added to training plan',
     })
   } catch (err) {
     if (!err.statusCode) {
