@@ -28,4 +28,16 @@ router.get(
   usersController.getHistory
 )
 
+router.post(
+  '/addtotrainingplan',
+  passport.authenticate('jwt', { session: false }),
+  usersController.addToTrainingPlan
+)
+
+router.post(
+  '/removefromtrainingplan',
+  passport.authenticate('jwt', { session: false }),
+  usersController.removeFromTrainingPlan
+)
+
 module.exports = router

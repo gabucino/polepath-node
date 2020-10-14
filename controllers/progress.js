@@ -22,7 +22,7 @@ exports.startProgress = async (req, res, next) => {
     user.activity.push({
       event: req.body.mastered ? 'mastered' : 'started',
       progressId: createdProgress._id,
-      polemoveId: createdProgress.moveRef
+      polemoveId: createdProgress.moveRef,
     })
 
     await user.save()
@@ -41,7 +41,7 @@ exports.updateProgress = async (req, res, next) => {
   try {
     console.log('UPDATEPROGRESS FIRED')
     //Need progressId, mastered
-  const progress =  await Progress.findOneAndUpdate(
+    const progress = await Progress.findOneAndUpdate(
       { _id: ObjectId(req.body.progressId) },
       { mastered: req.body.mastered }
     )
@@ -52,7 +52,7 @@ exports.updateProgress = async (req, res, next) => {
       user.activity.push({
         event: 'mastered',
         progressId: req.body.progressId,
-        polemoveId: progress.moveRef
+        polemoveId: progress.moveRef,
       })
       await user.save()
     } else {
@@ -130,7 +130,7 @@ exports.addNote = async (req, res, next) => {
   try {
     //inc progressId, text
     const updatedProgress = await Progress.findOneAndUpdate(
-      {_id: req.body.progressId},
+      { _id: req.body.progressId },
       {
         $push: {
           notes: {
@@ -143,7 +143,7 @@ exports.addNote = async (req, res, next) => {
 
     return res.status(200).json({
       message: 'Note added',
-      newNoteId: updatedProgress.notes[updatedProgress.notes.length -1]._id
+      newNoteId: updatedProgress.notes[updatedProgress.notes.length - 1]._id,
     })
   } catch (err) {
     if (!err.statusCode) {
@@ -154,9 +154,9 @@ exports.addNote = async (req, res, next) => {
 }
 
 exports.deleteNote = async (req, res, next) => {
-console.log('deleting note')
+  console.log('deleting note')
   await Progress.findOneAndUpdate(
-    {_id: req.params.progressId},
+    { _id: req.params.progressId },
     {
       $pull: {
         notes: {

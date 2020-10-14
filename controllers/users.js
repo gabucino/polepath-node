@@ -1,24 +1,10 @@
 const User = require('../models/users')
-const Polemove = require('../models/polemoves')
-const Media = require('../models/media')
-const History = require('../models/history')
-const Progress = require('../models/progress')
-
-const progressService = require('../services/progress')
-
 const ObjectId = require('mongodb').ObjectID
+
 const nodemailer = require('nodemailer')
 const sendgridTransport = require('nodemailer-sendgrid-transport')
 
-const jwt = require('jsonwebtoken')
-const { jsonSecret } = require('../config/keys')
-const bcrypt = require('bcrypt')
-const { validationResult } = require('express-validator')
-
 const bunny = require('../util/bunny')
-const helpers = require('../util/helpers')
-const moment = require('moment')
-const fs = require('fs')
 
 exports.changeStageName = async (req, res, next) => {
   const newName = req.body.stageName
@@ -51,12 +37,6 @@ exports.changeAvatar = async (req, res, next) => {
     await User.findByIdAndUpdate(req.user._id, {
       profilePic: `${timestamp}.${extension}`,
     })
-
-    // let pic;
-
-    // let pic = fs.readFileSync(profilePic);
-
-    // const pic = new File([myBlob], `${timestamp}.${extension}`,  { type: profilePic.mimetype, });
 
     const bunnyData = {
       fsFileName: profilePic.filename,
@@ -113,6 +93,29 @@ exports.addToTrainingPlan = async (req, res, next) => {
 
     return res.status(200).json({
       message: 'Added to training plan',
+    })
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500
+    }
+    next(err)
+  }
+}
+
+exports.removeFromTrainingPlan = async (req, res, next) => {
+  try {
+    await User.findOneAndUpdate(
+      { _id: req.user._id },
+      {
+        $pull: {
+          trainingPlan: ObjectId(req.body.polemoveId)
+        },
+      },
+      { new: true }
+    )
+
+    return res.status(200).json({
+      message: 'Move removed from training plan',
     })
   } catch (err) {
     if (!err.statusCode) {
