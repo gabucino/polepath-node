@@ -1,3 +1,6 @@
+const User = require('../models/users')
+
+
 exports.adminCheck = (req, res, next) => {
   if (req.user.role !== 'admin') {
     return res
