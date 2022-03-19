@@ -82,7 +82,7 @@ exports.createUser = async (req, res, next) => {
 
 
 exports.login = async (req, res) => {
-  const token = signToken(req.user)
+  const token = (req.user)
 
   //Getting user and progress (with media) from DB
   const user = await User.findById(req.user._id)
