@@ -1,24 +1,18 @@
-const router = require('express').Router()
-const passport = require('passport')
-const { upload } = require('../config/multer')
+const router = require("express").Router();
+const passport = require("passport");
+const { upload } = require("../config/multer");
 
-const polemovesController = require('../controllers/polemoves')
+const polemovesController = require("../controllers/polemoves");
 
 router.put(
-  '/create',
-  passport.authenticate('jwt', {
+  "/create",
+  passport.authenticate("jwt", {
     session: false,
   }),
-  upload.single('image'),
+  upload.single("image"),
   polemovesController.create
-)
+);
 
-router.get(
-  '/polemoves',
-  passport.authenticate('jwt', {
-    session: false,
-  }),
-  polemovesController.viewAll
-)
+router.get("/polemoves", polemovesController.viewAll);
 
-module.exports = router
+module.exports = router;

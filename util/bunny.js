@@ -1,27 +1,29 @@
-const axios = require('axios')
-const fs = require('fs')
+const axios = require("axios");
+const fs = require("fs");
 
 exports.bunnyGet = (req, res, next) => {
   axios
-    .get('https://storage.bunnycdn.com/polepath/', {
+    .get("https://storage.bunnycdn.com/polepath/", {
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         AccessKey: process.env.BUNNY_STORAGE_API_KEY,
       },
     })
     .then((response) => {
-      console.log(response.data)
+      console.log(response.data);
     })
     .catch((error) => {
-      console.log(error)
-    })
-}
+      console.log(error);
+    });
+};
 
 exports.upload = async (data) => {
   try {
-    const pic = fs.readFileSync(`./images/${data.fsFileName}`, '')
+    const pic = fs.readFileSync(`./images/${data.fsFileName}`, "");
 
     // const pic = fs.readFileSync(data.file)
+
+    console.log("HELLO, got this far");
 
     const response = await axios.put(
       `https://storage.bunnycdn.com/polepath/${data.path}/${data.bunnyFileName}`,
@@ -29,26 +31,25 @@ exports.upload = async (data) => {
       {
         headers: {
           AccessKey: process.env.BUNNY_STORAGE_API_KEY,
-          Checksum: '',
+          Checksum: "",
         },
       }
-    )
+    );
 
     if (response.status === 201) {
-      console.log(response.data)
-      fs.unlink(`./images/${data.fsFileName}`, ((error) => {
-        if (error) console.log(error)
-      }))
-
+      console.log(response.data);
+      fs.unlink(`./images/${data.fsFileName}`, (error) => {
+        if (error) console.log(error);
+      });
     } else {
-      const error = new Error('Bunny upload failed :(')
-      error.statusCode = 401
-      throw error
+      const error = new Error("Bunny upload failed :(");
+      error.statusCode = 401;
+      throw error;
     }
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};
 
 exports.getAll = async (data) => {
   try {
@@ -57,18 +58,18 @@ exports.getAll = async (data) => {
       {
         headers: {
           AccessKey: process.env.BUNNY_STORAGE_API_KEY,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       }
-    )
+    );
   } catch (err) {
-    console.error(err)
+    console.error(err);
   }
-}
+};
 
-exports.deleteFolder = async ({userId, polemoveId}) => {
+exports.deleteFolder = async ({ userId, polemoveId }) => {
   try {
-    console.log(userId, polemoveId)
+    console.log(userId, polemoveId);
     const response = await axios.delete(
       `https://storage.bunnycdn.com/polepath/users/${userId}/${polemoveId}/`,
       {
@@ -76,11 +77,11 @@ exports.deleteFolder = async ({userId, polemoveId}) => {
           AccessKey: process.env.BUNNY_STORAGE_API_KEY,
         },
       }
-    )
+    );
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};
 
 exports.delete = async ({ polemoveId, userId, filename }) => {
   try {
@@ -91,8 +92,8 @@ exports.delete = async ({ polemoveId, userId, filename }) => {
           AccessKey: process.env.BUNNY_STORAGE_API_KEY,
         },
       }
-    )
+    );
   } catch (err) {
-    console.error(err)
+    console.error(err);
   }
-}
+};

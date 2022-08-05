@@ -69,6 +69,8 @@ exports.viewAll = async (req, res, next) => {
     const polemoves = await Polemove.find({}).select(
       "name level description otherNames extension"
     );
+
+    console.log(polemoves);
     console.log("CHECK");
     res
       .status(200)
