@@ -70,8 +70,6 @@ exports.viewAll = async (req, res, next) => {
       "name level description otherNames extension"
     );
 
-    console.log(polemoves);
-    console.log("CHECK");
     res
       .status(200)
       .json({ message: "Moves fetched succesfully", polemoves: polemoves });
